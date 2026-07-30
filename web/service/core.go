@@ -138,8 +138,27 @@ type CoreService struct {
 // --------------------------------------------------------------------------- //
 
 func commandExists(name string) bool {
-	_, err := exec.LookPath(name)
-	return err == nil
+	return hostCommandPath(name) != ""
+}
+
+func hostCommandPath(name string) string {
+	if p, err := exec.LookPath(name); err == nil {
+		return p
+	}
+	for _, dir := range []string{"/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin", "/bin"} {
+		p := dir + "/" + name
+		if st, err := os.Stat(p); err == nil && !st.IsDir() && st.Mode()&0o111 != 0 {
+			return p
+		}
+	}
+	if name == "charon" {
+		for _, p := range []string{"/usr/lib/ipsec/charon", "/usr/lib/strongswan/charon", "/usr/libexec/ipsec/charon"} {
+			if st, err := os.Stat(p); err == nil && !st.IsDir() && st.Mode()&0o111 != 0 {
+				return p
+			}
+		}
+	}
+	return ""
 }
 
 // daemonInstalled reports whether a daemon is available either from the host
@@ -222,7 +241,7 @@ func daemonVersion(name string) string {
 		// charon launcher resolves here — otherwise `charon --version` (a "strongSwan
 		// 5.9.14" line) is never run and the IKEv2 core version shows as "—".
 		bin = p
-	} else if p, err := exec.LookPath(name); err == nil {
+	} else if p := hostCommandPath(name); p != "" {
 		bin = p
 	} else {
 		return ""
@@ -619,7 +638,7 @@ func (s *CoreService) awgStatus() CoreStatus {
 
 // mtprotoStatus reports the MTProto Proxy core. Unlike the tunnel protocols there
 // is no kernel module or interface to probe: telemt is a plain userspace relay, so
-// availability is just "is the bundled binary present" and liveness is "is any
+// availability is just "is the telemt binary present" and liveness is "is any
 // per-inbound child running".
 func (s *CoreService) mtprotoStatus() CoreStatus {
 	cs := CoreStatus{Name: "mtproto"}
@@ -627,7 +646,7 @@ func (s *CoreService) mtprotoStatus() CoreStatus {
 	cs.Inbounds = len(inbounds)
 	if !s.mtprotoService.Available() {
 		cs.State = CoreNotInstalled
-		cs.Detail = "telemt binary not bundled for this architecture"
+		cs.Detail = "telemt not installed"
 		return cs
 	}
 	cs.Version = daemonVersion("telemt")

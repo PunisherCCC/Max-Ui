@@ -20,6 +20,10 @@ BACKUP_DIR="$DEST_DIR/backups"
 CERT_DIR="$DEST_DIR/cert"
 DOMAIN="${DEPLOY_DOMAIN:-}"
 EMAIL="${DEPLOY_EMAIL:-}"
+BIN_DIR="$DEST_DIR/bin"
+XRAY_BIN="$BIN_DIR/xray-linux-amd64"
+SING_BOX_BIN="$BIN_DIR/sing-box-linux-amd64"
+TELEMT_BIN="$BIN_DIR/telemt"
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
     B=$'\e[1m'; D=$'\e[2m'; R=$'\e[0m'
@@ -99,6 +103,134 @@ fi
 if   command -v curl >/dev/null 2>&1; then DL="curl"
 elif command -v wget >/dev/null 2>&1; then DL="wget"
 else die "need 'curl' or 'wget' to download the release."; fi
+
+download_to() {
+    local url="$1" out="$2"
+    if [[ "$DL" == "curl" ]]; then
+        curl -fL --retry 3 -sS -o "$out" "$url"
+    else
+        wget --tries=3 -q -O "$out" "$url"
+    fi
+}
+
+latest_release_tag() {
+    local repo="$1" tag=""
+    if [[ "$DL" == "curl" ]]; then
+        tag="$(curl -fsSL --max-time 20 "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null |
+            sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1 || true)"
+    else
+        tag="$(wget -qO- --timeout=20 "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null |
+            sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1 || true)"
+    fi
+    printf '%s' "$tag"
+}
+
+install_runtime_packages() {
+    command -v apt-get >/dev/null 2>&1 || { warn "apt-get not found; skipping distro VPN packages."; return 0; }
+    msg "Installing recommended runtime packages"
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    local pkgs=(ca-certificates curl wget unzip tar gzip file iproute2 nftables kmod psmisc openvpn strongswan xl2tpd ocserv)
+    apt-get install -y "${pkgs[@]}" || warn "some recommended VPN packages failed to install; continue and check Core settings."
+    for pkg in pptpd accel-ppp; do
+        if apt-cache show "$pkg" >/dev/null 2>&1; then
+            apt-get install -y "$pkg" || warn "optional package '$pkg' failed to install."
+        else
+            warn "optional package '$pkg' is not available in this distro repository."
+        fi
+    done
+}
+
+install_xray_core() {
+    msg "Installing Xray core"
+    install -d -m 0755 "$BIN_DIR"
+    if [[ -x "$XRAY_BIN" ]]; then
+        ok "Xray core already exists -> $XRAY_BIN"
+        return 0
+    fi
+    command -v unzip >/dev/null 2>&1 || die "unzip is required to install Xray core."
+    local tag url tmp dir src
+    tag="$(latest_release_tag "XTLS/Xray-core")"
+    [[ -n "$tag" ]] || tag="latest"
+    if [[ "$tag" == "latest" ]]; then
+        url="https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip"
+    else
+        url="https://github.com/XTLS/Xray-core/releases/download/$tag/Xray-linux-64.zip"
+    fi
+    tmp="$(mktemp /tmp/max-ui-xray.XXXXXX.zip)"
+    dir="$(mktemp -d /tmp/max-ui-xray.XXXXXX)"
+    download_to "$url" "$tmp" || { rm -rf "$tmp" "$dir"; die "failed to download Xray core from $url"; }
+    unzip -q "$tmp" -d "$dir"
+    src="$dir/xray"
+    [[ -f "$src" ]] || { rm -rf "$tmp" "$dir"; die "downloaded Xray archive did not contain xray."; }
+    install -m 0755 "$src" "$XRAY_BIN"
+    for geo in geoip.dat geosite.dat; do
+        [[ -f "$dir/$geo" ]] && install -m 0644 "$dir/$geo" "$BIN_DIR/$geo" || true
+    done
+    rm -rf "$tmp" "$dir"
+    ok "Xray core -> $XRAY_BIN"
+}
+
+install_sing_box_core() {
+    msg "Installing Sing-box core"
+    install -d -m 0755 "$BIN_DIR"
+    if [[ -x "$SING_BOX_BIN" ]]; then
+        ok "Sing-box core already exists -> $SING_BOX_BIN"
+        return 0
+    fi
+    local tag ver url tmp dir src
+    tag="$(latest_release_tag "SagerNet/sing-box")"
+    [[ -n "$tag" ]] || { warn "could not resolve latest Sing-box release; skipping."; return 0; }
+    ver="${tag#v}"
+    url="https://github.com/SagerNet/sing-box/releases/download/$tag/sing-box-$ver-linux-amd64.tar.gz"
+    tmp="$(mktemp /tmp/max-ui-singbox.XXXXXX.tgz)"
+    dir="$(mktemp -d /tmp/max-ui-singbox.XXXXXX)"
+    if ! download_to "$url" "$tmp"; then
+        rm -rf "$tmp" "$dir"
+        warn "failed to download Sing-box from $url; install it manually as $SING_BOX_BIN."
+        return 0
+    fi
+    tar -xzf "$tmp" -C "$dir"
+    src="$(find "$dir" -type f -name sing-box | head -n1)"
+    if [[ -z "$src" ]]; then
+        rm -rf "$tmp" "$dir"
+        warn "downloaded Sing-box archive did not contain sing-box."
+        return 0
+    fi
+    install -m 0755 "$src" "$SING_BOX_BIN"
+    rm -rf "$tmp" "$dir"
+    ok "Sing-box core -> $SING_BOX_BIN"
+}
+
+install_telemt_core() {
+    msg "Installing telemt MTProto runtime"
+    install -d -m 0755 "$BIN_DIR"
+    if [[ -x "$TELEMT_BIN" ]]; then
+        ok "telemt already exists -> $TELEMT_BIN"
+        return 0
+    fi
+    local tag url tmp dir src
+    tag="$(latest_release_tag "telemt/telemt")"
+    [[ -n "$tag" ]] || { warn "could not resolve latest telemt release; skipping MTProto runtime."; return 0; }
+    url="https://github.com/telemt/telemt/releases/download/$tag/telemt-x86_64-linux-musl.tar.gz"
+    tmp="$(mktemp /tmp/max-ui-telemt.XXXXXX.tgz)"
+    dir="$(mktemp -d /tmp/max-ui-telemt.XXXXXX)"
+    if ! download_to "$url" "$tmp"; then
+        rm -rf "$tmp" "$dir"
+        warn "failed to download telemt from $url; install it manually as $TELEMT_BIN."
+        return 0
+    fi
+    tar -xzf "$tmp" -C "$dir"
+    src="$(find "$dir" -type f -name telemt | head -n1)"
+    if [[ -z "$src" ]]; then
+        rm -rf "$tmp" "$dir"
+        warn "downloaded telemt archive did not contain telemt."
+        return 0
+    fi
+    install -m 0755 "$src" "$TELEMT_BIN"
+    rm -rf "$tmp" "$dir"
+    ok "telemt -> $TELEMT_BIN"
+}
 
 # Resolve + download the latest release asset
 msg "Fetching latest release of $REPO"
@@ -334,6 +466,11 @@ chmod +x "$tmp"
 mv -f "$tmp" "$DEST"
 trap - EXIT
 ok "installed -> $DEST"
+
+install_runtime_packages
+install_xray_core
+install_sing_box_core
+install_telemt_core
 
 # Install/refresh the management menu on BOTH paths (fresh install and update), so
 # `max-ui` always matches the binary that ships it. Must come before the TLS step

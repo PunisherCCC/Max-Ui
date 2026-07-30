@@ -2,7 +2,6 @@ package service
 
 import (
 	"os"
-	"os/exec"
 	"strings"
 	"sync"
 	"syscall"
@@ -28,7 +27,7 @@ func daemonBin(name string) string {
 	if p := backend.StrongswanBinPath(name); p != "" {
 		return p
 	}
-	if p, err := exec.LookPath(name); err == nil {
+	if p := hostCommandPath(name); p != "" {
 		return p
 	}
 	return name

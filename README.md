@@ -32,7 +32,7 @@ Max-ui is a customized VPN/proxy management panel based on 3X-UI. It keeps the f
 
 ## Install
 
-The installer downloads the latest `max-ui-amd64` release asset from this repository.
+The installer downloads the latest `max-ui-amd64` release asset from this repository, installs the recommended Ubuntu/Debian runtime packages, and prepares the runtime binaries the panel expects under `/opt/max-ui/bin`.
 
 ```bash
 curl -Ls https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/deploy.sh | sudo bash
@@ -43,6 +43,15 @@ After installation, open the server menu with:
 ```bash
 max-ui
 ```
+
+During installation Max-ui prepares:
+
+- `bin/xray-linux-amd64` from the latest Xray-core release.
+- `bin/sing-box-linux-amd64` from the latest Sing-box release.
+- `bin/telemt` for MTProto Proxy.
+- Distro packages such as OpenVPN, strongSwan, xl2tpd, ocserv, nftables and iproute2 when `apt-get` is available.
+
+Optional packages such as `pptpd` and `accel-ppp` are installed when your Ubuntu/Debian repository provides them.
 
 ## Uninstall
 
@@ -69,6 +78,12 @@ Expected Sing-box binary path:
 bin/sing-box-<GOOS>-<GOARCH>
 ```
 
+For the Linux amd64 installer this is created as:
+
+```text
+/opt/max-ui/bin/sing-box-linux-amd64
+```
+
 Current scope: Sing-box is a guarded alternate runtime. Automatic conversion of every Xray inbound into Sing-box JSON is not included yet.
 
 ## Bandwidth Multiplier
@@ -93,7 +108,7 @@ The multiplier:
 
 GitHub Actions builds and smoke-checks the Linux amd64 binary on every push to `main`.
 
-On version tags such as `v1.8.7`, the workflow creates a GitHub Release and uploads:
+On version tags such as `v1.8.8`, the workflow creates a GitHub Release and uploads:
 
 ```text
 max-ui-amd64

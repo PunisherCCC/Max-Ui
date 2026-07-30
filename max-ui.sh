@@ -385,9 +385,35 @@ state_color() {
     esac
 }
 
-menu_item() {
+badge() {
+    local value="$1" c
+    c="$(state_color "$value")"
+    printf '%s%-10s%s' "$c" "$value" "$R"
+}
+
+menu_cell() {
     local n="$1" label="$2" hint="${3:-}"
-    printf '  %s%2s%s  %-24s %s%s%s\n' "$GREEN" "$n" "$R" "$label" "$D" "$hint" "$R"
+    if [[ -n "$n" ]]; then
+        printf '%s%2s%s  %-20s %s%-17s%s' "$GREEN" "$n" "$R" "$label" "$D" "$hint" "$R"
+    else
+        printf '%-45s' ""
+    fi
+}
+
+menu_row() {
+    printf ' | '
+    menu_cell "$1" "$2" "${3:-}"
+    printf ' | '
+    menu_cell "$4" "$5" "${6:-}"
+    printf ' |\n'
+}
+
+menu_section() {
+    printf ' | %s%-42s%s | %s%-42s%s |\n' "$B$WHITE" "$1" "$R" "$B$WHITE" "$2" "$R"
+}
+
+box_line() {
+    printf ' +%s+%s+\n' "$(printf '%.0s-' {1..47})" "$(printf '%.0s-' {1..47})"
 }
 
 show_menu() {
@@ -401,36 +427,27 @@ show_menu() {
     state_c="$(state_color "$state")"
 
     printf '\n'
-    hr
-    printf '  %sMAX-UI%s %sserver console%s                     %sv%s%s\n' \
-        "$B$TEAL" "$R" "$D" "$R" "$D" "$version" "$R"
-    printf '  %spanel%s %s%s%s    %sunit%s %s    %sstate%s %s%s%s\n' \
-        "$D" "$R" "$panel_c" "$panel" "$R" "$D" "$R" "$unit" "$D" "$R" "$state_c" "$state" "$R"
-    hr
-    printf '  %sSystem%s\n' "$B$WHITE" "$R"
-    menu_item 1  "Update panel"       "download latest release"
-    menu_item 2  "Uninstall panel"    "remove service and files"
-    menu_item 8  "Show login info"    "URL, user, service"
-    menu_item 17 "Issue SSL"          "Let's Encrypt"
-    printf '\n  %sAccount and panel%s\n' "$B$WHITE" "$R"
-    menu_item 3  "Change username"
-    menu_item 4  "Change password"
-    menu_item 5  "Change port"
-    menu_item 6  "Change web path"
-    menu_item 7  "Reset login"        "random secure values"
-    printf '\n  %sService control%s\n' "$B$WHITE" "$R"
-    menu_item 9  "Start service"      "systemd"
-    menu_item 10 "Stop service"       "systemd"
-    menu_item 11 "Restart service"    "systemd"
-    printf '\n  %sCore control%s\n' "$B$WHITE" "$R"
-    menu_item 12 "Start Xray"
-    menu_item 13 "Stop Xray"
-    menu_item 14 "Restart Xray"
-    menu_item 15 "View Xray logs"
-    menu_item 16 "Restart all cores"
-    printf '\n'
-    menu_item 0  "Exit"
-    hr
+    printf ' %s+%s+%s\n' "$D" "$(printf '%.0s-' {1..97})" "$R"
+    printf ' | %sMAX-UI%s %sserver console%s%62s%s v%-8s%s |\n' \
+        "$B$TEAL" "$R" "$D" "$R" "" "$D" "$version" "$R"
+    printf ' | panel: %s  unit: %s%-18s%s state: %s |\n' \
+        "$(badge "$panel")" "$TEAL" "$unit" "$R" "$(badge "$state")"
+    printf ' %s+%s+%s\n' "$D" "$(printf '%.0s-' {1..97})" "$R"
+    box_line
+    menu_section "SYSTEM" "ACCOUNT"
+    menu_row 1  "Update panel"    "latest release" 3  "Change username" ""
+    menu_row 2  "Uninstall panel" "remove files"    4  "Change password" ""
+    menu_row 8  "Login info"      "URL and user"    5  "Change port" ""
+    menu_row 17 "Issue SSL"       "Let's Encrypt"   6  "Change web path" ""
+    menu_row "" "" ""                              7  "Reset login" "secure random"
+    box_line
+    menu_section "SERVICE" "CORES"
+    menu_row 9  "Start service"   "systemd"        12 "Start Xray" ""
+    menu_row 10 "Stop service"    "systemd"        13 "Stop Xray" ""
+    menu_row 11 "Restart service" "systemd"        14 "Restart Xray" ""
+    menu_row "" "" ""                              15 "View Xray logs" ""
+    menu_row 0  "Exit"            ""               16 "Restart all cores" ""
+    box_line
 }
 
 pause() {

@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mhsanaei/3x-ui/v2/backend"
 	"github.com/mhsanaei/3x-ui/v2/database"
 	"github.com/mhsanaei/3x-ui/v2/database/model"
 	"github.com/mhsanaei/3x-ui/v2/logger"
@@ -23,7 +22,7 @@ import (
 )
 
 // MtprotoService manages the MTProto Proxy (Telegram) protocol, backed by the
-// bundled `telemt` daemon: one process per inbound, like ocserv and accel-ppp.
+// `telemt` daemon: one process per inbound, like ocserv and accel-ppp.
 //
 // MTProto is the ODD ONE OUT among the VPN protocols and the differences are
 // load-bearing, so they are spelled out here rather than discovered later:
@@ -316,7 +315,8 @@ func (s *MtprotoService) GetSocksConfig(inbound *model.Inbound) *xray.InboundCon
 	}
 }
 
-// telemtBinaryPath resolves the bundled static telemt binary.
+// telemtBinaryPath resolves telemt from Max-ui's runtime bin dir, an embedded
+// bundle, or the host package manager.
 func (s *MtprotoService) telemtBinaryPath() string {
 	return daemonBin("telemt")
 }
@@ -984,7 +984,8 @@ func (s *MtprotoService) GenerateSecret() (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-// Available reports whether the telemt binary is bundled for this arch.
+// Available reports whether telemt is available from Max-ui's runtime bin dir,
+// an embedded bundle, or the host package manager.
 func (s *MtprotoService) Available() bool {
-	return backend.DaemonPath("telemt") != ""
+	return daemonInstalled("telemt")
 }
