@@ -13,7 +13,7 @@ tmp/
 
 # Ignore build and distribution directories
 backup/
-bin/
+/bin/
 dist/
 release/
 node_modules/
@@ -52,6 +52,9 @@ skills-lock.json
 # go:embed at build time) — large artifacts, never commit them.
 corebundle/core/*
 !corebundle/core/.gitkeep
+!corebundle/core/keep.txt
+backend/bin/*
+!backend/bin/keep.txt
 
 # Runtime state + local working dirs (regenerate on run/test — never commit).
 # max-ui.db holds panel credentials; the old x-ui.db rule missed it post-rebrand.
