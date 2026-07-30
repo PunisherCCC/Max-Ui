@@ -13,6 +13,7 @@ Max-ui is a customized VPN/proxy management panel based on 3X-UI. It keeps the f
 - Account freeze/unfreeze.
 - Link export as TXT and PDF.
 - Improved web UI theme and improved Ubuntu/server-side `max-ui` menu.
+- Vue 3 compatibility runtime for the web panel, preserving existing pages while the UI is migrated progressively.
 - GitHub Actions build and release pipeline.
 
 ## Supported Protocols
@@ -108,13 +109,24 @@ The multiplier:
 
 GitHub Actions builds and smoke-checks the Linux amd64 binary on every push to `main`.
 
-On version tags such as `v1.8.8`, the workflow creates a GitHub Release and uploads:
+On version tags such as `v1.8.9`, the workflow creates a GitHub Release and uploads:
 
 ```text
 max-ui-amd64
 ```
 
 The install command uses the latest release asset.
+
+## Web UI
+
+The panel now loads Vue 3 through the official compat runtime. Existing pages still use the Options API and legacy Ant Design Vue components, so the UI can be migrated safely page by page without breaking the current admin workflows.
+
+The active theme is defined in:
+
+```text
+web/assets/css/tokens.css
+web/assets/css/components.css
+```
 
 ## Build From Source
 

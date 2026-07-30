@@ -41,9 +41,9 @@
   overflow:hidden;
   font-family:var(--font-sans);
   background:
-    linear-gradient(135deg, rgba(8,127,111,.08), transparent 30%),
-    linear-gradient(225deg, rgba(40,94,168,.08), transparent 28%),
-    radial-gradient(circle at 1px 1px, rgba(90,102,117,.13) 1px, transparent 0),
+    linear-gradient(135deg, rgba(12,110,214,.09), transparent 30%),
+    linear-gradient(225deg, rgba(10,143,117,.08), transparent 28%),
+    radial-gradient(circle at 1px 1px, rgba(82,97,115,.14) 1px, transparent 0),
     var(--bg);
   background-size:auto, auto, 22px 22px, auto;
   color:var(--text);
@@ -54,9 +54,9 @@
 
 body.dark .bo-shell {
   background:
-    linear-gradient(135deg, rgba(40,199,167,.08), transparent 30%),
-    linear-gradient(225deg, rgba(120,169,255,.08), transparent 28%),
-    radial-gradient(circle at 1px 1px, rgba(255,255,255,.075) 1px, transparent 0),
+    linear-gradient(135deg, rgba(33,166,184,.12), transparent 30%),
+    linear-gradient(225deg, rgba(94,201,137,.09), transparent 28%),
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.08) 1px, transparent 0),
     var(--bg);
   background-size:auto, auto, 24px 24px, auto;
 }

@@ -86,26 +86,26 @@
  * ------------------------------------------------------------------ */
 
 :root {
-  --bg:#f3f6f8;
+  --bg:#f4f7fb;
   --surface:#ffffff;
-  --surface-2:#edf3f6;
-  --border:#dde6ec;
-  --border-strong:#c7d5de;
+  --surface-2:#eef4fa;
+  --border:#d8e3ee;
+  --border-strong:#bdccda;
 
-  --text:#1b2430;          /* 15.65:1 on --surface */
-  --text-2:#5a6675;        /*  5.85:1 on --surface */
-  --text-3:#6b7787;        /*  4.55:1 on --surface - see contrast note */
+  --text:#17212f;
+  --text-2:#526173;
+  --text-3:#67778a;
 
   /* Brand. --accent is the identity colour and is used for text, borders,
      icons and rings. --accent-strong is ONLY for filled surfaces that carry
      --on-accent text, where the brand green is fractionally too light. */
-  --accent:#087f6f;        /*  4.46:1 as text on --surface */
-  --accent-strong:#047464; /*  4.88:1 behind white text */
-  --accent-weak:#dff1ec;
-  --accent-2:#285ea8;
-  --accent-2-weak:#e4edf8;
-  --accent-3:#9a6a10;
-  --accent-3-weak:#fff3d8;
+  --accent:#0c6ed6;
+  --accent-strong:#075fc0;
+  --accent-weak:#e1efff;
+  --accent-2:#0a8f75;
+  --accent-2-weak:#ddf4ee;
+  --accent-3:#a65c00;
+  --accent-3-weak:#fff0d9;
   --on-accent:#ffffff;
 
   /* Status scale. RESERVED: these four encode state and nothing else, and
@@ -117,20 +117,20 @@
        ok 5.36  warn 5.59  error 6.54  info 4.95  off 4.55
      They are also muted relative to ant's defaults so they sit with the
      teal/slate system instead of shouting over it. */
-  --ok:#1c7a45;
-  --info:#1f6fd0;
-  --warn:#8a6008;
-  --error:#b3261e;
-  --off:#6b7787;
+  --ok:#15764a;
+  --info:#0c6ed6;
+  --warn:#805a05;
+  --error:#b4232a;
+  --off:#67778a;
 
-  --ok-weak:rgba(28,122,69,.10);
-  --info-weak:rgba(31,111,208,.10);
-  --warn-weak:rgba(138,96,8,.12);
-  --error-weak:rgba(179,38,30,.10);
-  --off-weak:rgba(107,119,135,.12);
+  --ok-weak:rgba(21,118,74,.11);
+  --info-weak:rgba(12,110,214,.11);
+  --warn-weak:rgba(128,90,5,.12);
+  --error-weak:rgba(180,35,42,.11);
+  --off-weak:rgba(103,119,138,.12);
 
   --shadow-sm:0 1px 2px rgba(16,24,32,.05);
-  --shadow-md:0 14px 34px -24px rgba(21,38,54,.35),0 4px 12px -8px rgba(21,38,54,.20);
+  --shadow-md:0 14px 34px -24px rgba(18,35,55,.36),0 4px 12px -8px rgba(18,35,55,.18);
 
   color-scheme:light;
 }
@@ -148,38 +148,38 @@
  * ------------------------------------------------------------------ */
 
 body.dark {
-  --bg:#08111f;
-  --surface:#121d2e;
-  --surface-2:#1a2639;
-  --border:#26364d;
-  --border-strong:#3c5170;
+  --bg:#111317;
+  --surface:#181b20;
+  --surface-2:#22262d;
+  --border:#333943;
+  --border-strong:#4b5665;
 
   --text:rgba(255,255,255,.88);     /* 12.97:1 on --surface */
   --text-2:rgba(255,255,255,.60);   /*  6.68:1 on --surface */
   --text-3:rgba(255,255,255,.48);   /*  4.81:1 on --surface */
 
-  --accent:#28c7a7;
-  --accent-strong:#28c7a7;          /* 7.70:1 behind --on-accent; no lift needed */
-  --accent-weak:rgba(40,199,167,.15);
-  --accent-2:#78a9ff;
-  --accent-2-weak:rgba(120,169,255,.13);
-  --accent-3:#f0b85a;
-  --accent-3-weak:rgba(240,184,90,.15);
-  --on-accent:#071a16;
+  --accent:#21a6b8;
+  --accent-strong:#35bed0;
+  --accent-weak:rgba(33,166,184,.16);
+  --accent-2:#5ec989;
+  --accent-2-weak:rgba(94,201,137,.14);
+  --accent-3:#e1a03a;
+  --accent-3-weak:rgba(225,160,58,.16);
+  --on-accent:#061316;
 
   /* Dark steps of the same reserved scale. Contrast as TEXT on --surface:
      ok 8.44  warn 7.82  error 5.81  info 6.76  off 5.29 */
-  --ok:#4fd08d;
-  --info:#6fa8f5;
-  --warn:#e0a94a;
-  --error:#f2726a;
-  --off:#8593a8;
+  --ok:#5ec989;
+  --info:#63b3ed;
+  --warn:#e1a03a;
+  --error:#f46d75;
+  --off:#8d98a8;
 
-  --ok-weak:rgba(79,208,141,.13);
-  --info-weak:rgba(111,168,245,.13);
-  --warn-weak:rgba(224,169,74,.14);
-  --error-weak:rgba(242,114,106,.13);
-  --off-weak:rgba(133,147,168,.15);
+  --ok-weak:rgba(94,201,137,.14);
+  --info-weak:rgba(99,179,237,.14);
+  --warn-weak:rgba(225,160,58,.15);
+  --error-weak:rgba(244,109,117,.14);
+  --off-weak:rgba(141,152,168,.15);
 
   --shadow-sm:none;
   --shadow-md:none;
