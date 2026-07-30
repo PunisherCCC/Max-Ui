@@ -72,6 +72,8 @@ The multiplier:
 
 ## Install
 
+The installer downloads the latest `max-ui-amd64` release asset from this repository.
+
 ```bash
 curl -Ls https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/deploy.sh | sudo bash
 ```
@@ -104,6 +106,14 @@ cd max-ui
 go mod download
 go build -o max-ui
 ```
+
+## GitHub Builds
+
+GitHub Actions builds the Linux amd64 binary on every push to `main`.
+
+- Open **Actions -> Build** to download the latest build artifact.
+- Push a version tag like `v1.8.5` to create a GitHub Release with `max-ui-amd64`.
+- The install command above uses the latest GitHub Release asset.
 
 ## Development Notes
 
