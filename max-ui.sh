@@ -377,28 +377,59 @@ item_ssl() {
 #  Menu
 # --------------------------------------------------------------------------- #
 
+state_color() {
+    case "$1" in
+        running|active|true|enabled) printf '%s' "$GREEN" ;;
+        stopped|inactive|false|disabled|failed) printf '%s' "$RED" ;;
+        *) printf '%s' "$YELLOW" ;;
+    esac
+}
+
+menu_item() {
+    local n="$1" label="$2" hint="${3:-}"
+    printf '  %s%2s%s  %-24s %s%s%s\n' "$GREEN" "$n" "$R" "$label" "$D" "$hint" "$R"
+}
+
 show_menu() {
-    local unit state panel
+    local unit state panel version panel_c state_c
     unit="$(info_get systemdUnit)";   [[ -n "$unit"  ]] || unit="?"
     state="$(info_get systemdState)"; [[ -n "$state" ]] || state="?"
+    version="$(info_get version)";     [[ -n "$version" ]] || version="?"
     panel="stopped"
     [[ "$(info_get panelRunning)" == "true" ]] && panel="running"
+    panel_c="$(state_color "$panel")"
+    state_c="$(state_color "$state")"
 
     printf '\n'
     hr
-    printf '%s[%sMAX-UI%s]%s management   %sv%s%s\n' \
-        "$B$TEAL" "$GREEN" "$TEAL" "$R" "$D" "$(info_get version)" "$R"
-    printf '  %spanel%s %s   %sunit%s %s (%s)\n' "$D" "$R" "$panel" "$D" "$R" "$unit" "$state"
+    printf '  %sMAX-UI%s %sserver console%s                     %sv%s%s\n' \
+        "$B$TEAL" "$R" "$D" "$R" "$D" "$version" "$R"
+    printf '  %spanel%s %s%s%s    %sunit%s %s    %sstate%s %s%s%s\n' \
+        "$D" "$R" "$panel_c" "$panel" "$R" "$D" "$R" "$unit" "$D" "$R" "$state_c" "$state" "$R"
     hr
-    printf '    %s1)%s  Update                 %s10)%s Stop      (systemd)\n'   "$GREEN" "$R" "$GREEN" "$R"
-    printf '    %s2)%s  Un-Install             %s11)%s Restart   (systemd)\n'   "$GREEN" "$R" "$GREEN" "$R"
-    printf '    %s3)%s  Change Username        %s12)%s Start Xray\n'            "$GREEN" "$R" "$GREEN" "$R"
-    printf '    %s4)%s  Change Password        %s13)%s Stop Xray\n'             "$GREEN" "$R" "$GREEN" "$R"
-    printf '    %s5)%s  Change Port            %s14)%s Restart Xray\n'          "$GREEN" "$R" "$GREEN" "$R"
-    printf '    %s6)%s  Change Web-Path        %s15)%s Xray Logs\n'             "$GREEN" "$R" "$GREEN" "$R"
-    printf '    %s7)%s  Reset Login (random)   %s16)%s Restart All Cores\n'     "$GREEN" "$R" "$GREEN" "$R"
-    printf '    %s8)%s  View login info        %s17)%s Get SSL (Lets Encrypt)\n' "$GREEN" "$R" "$GREEN" "$R"
-    printf '    %s9)%s  Start     (systemd)    %s0)%s  Exit\n'                  "$GREEN" "$R" "$GREEN" "$R"
+    printf '  %sSystem%s\n' "$B$WHITE" "$R"
+    menu_item 1  "Update panel"       "download latest release"
+    menu_item 2  "Uninstall panel"    "remove service and files"
+    menu_item 8  "Show login info"    "URL, user, service"
+    menu_item 17 "Issue SSL"          "Let's Encrypt"
+    printf '\n  %sAccount and panel%s\n' "$B$WHITE" "$R"
+    menu_item 3  "Change username"
+    menu_item 4  "Change password"
+    menu_item 5  "Change port"
+    menu_item 6  "Change web path"
+    menu_item 7  "Reset login"        "random secure values"
+    printf '\n  %sService control%s\n' "$B$WHITE" "$R"
+    menu_item 9  "Start service"      "systemd"
+    menu_item 10 "Stop service"       "systemd"
+    menu_item 11 "Restart service"    "systemd"
+    printf '\n  %sCore control%s\n' "$B$WHITE" "$R"
+    menu_item 12 "Start Xray"
+    menu_item 13 "Stop Xray"
+    menu_item 14 "Restart Xray"
+    menu_item 15 "View Xray logs"
+    menu_item 16 "Restart all cores"
+    printf '\n'
+    menu_item 0  "Exit"
     hr
 }
 
@@ -411,7 +442,7 @@ menu_loop() {
     local choice
     while true; do
         show_menu
-        printf '  choose [0-17]: '
+        printf '  %schoose%s [0-17]: ' "$B$TEAL" "$R"
         # EOF (a piped stdin) must leave, not spin forever on an empty read.
         read -r choice || { printf '\n'; return 0; }
         printf '\n'

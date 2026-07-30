@@ -86,11 +86,11 @@
  * ------------------------------------------------------------------ */
 
 :root {
-  --bg:#f4f6f8;
+  --bg:#f3f6f8;
   --surface:#ffffff;
-  --surface-2:#eef2f4;
-  --border:#e4e9ee;
-  --border-strong:#d2dae1;
+  --surface-2:#edf3f6;
+  --border:#dde6ec;
+  --border-strong:#c7d5de;
 
   --text:#1b2430;          /* 15.65:1 on --surface */
   --text-2:#5a6675;        /*  5.85:1 on --surface */
@@ -99,9 +99,13 @@
   /* Brand. --accent is the identity colour and is used for text, borders,
      icons and rings. --accent-strong is ONLY for filled surfaces that carry
      --on-accent text, where the brand green is fractionally too light. */
-  --accent:#008771;        /*  4.46:1 as text on --surface */
-  --accent-strong:#00806b; /*  4.88:1 behind white text */
-  --accent-weak:#e2f2ee;
+  --accent:#087f6f;        /*  4.46:1 as text on --surface */
+  --accent-strong:#047464; /*  4.88:1 behind white text */
+  --accent-weak:#dff1ec;
+  --accent-2:#285ea8;
+  --accent-2-weak:#e4edf8;
+  --accent-3:#9a6a10;
+  --accent-3-weak:#fff3d8;
   --on-accent:#ffffff;
 
   /* Status scale. RESERVED: these four encode state and nothing else, and
@@ -126,7 +130,7 @@
   --off-weak:rgba(107,119,135,.12);
 
   --shadow-sm:0 1px 2px rgba(16,24,32,.05);
-  --shadow-md:0 6px 16px -6px rgba(16,24,32,.10),0 2px 5px rgba(16,24,32,.05);
+  --shadow-md:0 14px 34px -24px rgba(21,38,54,.35),0 4px 12px -8px rgba(21,38,54,.20);
 
   color-scheme:light;
 }
@@ -144,19 +148,23 @@
  * ------------------------------------------------------------------ */
 
 body.dark {
-  --bg:#0a1222;
-  --surface:#151f31;
-  --surface-2:#1c2740;
-  --border:#2c3950;
-  --border-strong:#3c4b68;
+  --bg:#08111f;
+  --surface:#121d2e;
+  --surface-2:#1a2639;
+  --border:#26364d;
+  --border-strong:#3c5170;
 
   --text:rgba(255,255,255,.88);     /* 12.97:1 on --surface */
   --text-2:rgba(255,255,255,.60);   /*  6.68:1 on --surface */
   --text-3:rgba(255,255,255,.48);   /*  4.81:1 on --surface */
 
-  --accent:#1bbf9f;
-  --accent-strong:#1bbf9f;          /* 7.70:1 behind --on-accent; no lift needed */
-  --accent-weak:rgba(27,191,159,.14);
+  --accent:#28c7a7;
+  --accent-strong:#28c7a7;          /* 7.70:1 behind --on-accent; no lift needed */
+  --accent-weak:rgba(40,199,167,.15);
+  --accent-2:#78a9ff;
+  --accent-2-weak:rgba(120,169,255,.13);
+  --accent-3:#f0b85a;
+  --accent-3-weak:rgba(240,184,90,.15);
   --on-accent:#071a16;
 
   /* Dark steps of the same reserved scale. Contrast as TEXT on --surface:
