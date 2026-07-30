@@ -2,7 +2,7 @@
 # MmD
 set -euo pipefail
 
-REPO="Sir-MmD/max-ui"
+REPO="PunisherCCC/Max-Ui"
 ASSET="max-ui-amd64"
 DEST_DIR="/opt/max-ui"
 DEST="$DEST_DIR/$ASSET"

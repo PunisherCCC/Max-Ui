@@ -42,7 +42,7 @@ var (
 )
 
 // Panel self-update. The panel binary ships as a single GitHub release asset
-// (Sir-MmD/max-ui, "max-ui-amd64") — the same source deploy.sh installs from — so
+// (PunisherCCC/Max-Ui, "max-ui-amd64") — the same source deploy.sh installs from — so
 // the overview can both check for and apply updates in place.
 //
 // PanelAsset and PanelDownloadURL are exported because `max-ui-amd64 update` (the
@@ -52,7 +52,7 @@ var (
 // syscall.Exec's os.Args back into itself. That is harmless for the panel, but from
 // a CLI process it would re-exec the CLI with its own `update` arguments, in a loop.
 const (
-	panelRepo      = "Sir-MmD/max-ui"
+	panelRepo      = "PunisherCCC/Max-Ui"
 	PanelAsset     = "max-ui-amd64"
 	panelLatestAPI = "https://api.github.com/repos/" + panelRepo + "/releases/latest"
 	// PanelDownloadURL is the release asset both the in-panel updater and the CLI

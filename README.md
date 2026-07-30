@@ -73,7 +73,7 @@ The multiplier:
 ## Install
 
 ```bash
-curl -Ls https://raw.githubusercontent.com/Sir-MmD/max-ui/refs/heads/main/deploy.sh | sudo bash
+curl -Ls https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/deploy.sh | sudo bash
 ```
 
 After installation, open the management menu with:
@@ -99,7 +99,7 @@ Requirements:
 Clone and build:
 
 ```bash
-git clone https://github.com/Sir-MmD/max-ui.git
+git clone https://github.com/PunisherCCC/Max-Ui.git
 cd max-ui
 go mod download
 go build -o max-ui

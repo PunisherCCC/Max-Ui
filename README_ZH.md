@@ -1,12 +1,12 @@
 [English](/README.md) | [?????](/README_FA.md) | [???????](/README_AR.md) | [??](/README_ZH.md) | [Espa�ol](/README_ES.md) | [???????](/README_RU.md) | [T�rk�e](/README_TR.md)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Sir-MmD/max-ui/refs/heads/main/media/logo.png" alt="MAX-UI Logo" width="260">
+  <img src="https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/media/logo.png" alt="MAX-UI Logo" width="260">
 </p>
 
 ???? **[3X-UI](https://github.com/MHSanaei/3x-ui)** ??(2.9.3 ??)????????????????,?????????? **Xray-core** ???????????
 
-![??](https://raw.githubusercontent.com/Sir-MmD/max-ui/refs/heads/main/media/overview.png)
+![??](https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/media/overview.png)
 
 ## ????
 
@@ -68,7 +68,7 @@
 ## ????
 
 ```bash
-curl -Ls https://raw.githubusercontent.com/Sir-MmD/max-ui/refs/heads/main/deploy.sh | sudo bash
+curl -Ls https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/deploy.sh | sudo bash
 ```
 
 ## ????
@@ -197,13 +197,13 @@ flowchart TB
 ## ?????
 
 ```bash
-git clone https://github.com/Sir-MmD/max-ui.git && cd max-ui
+git clone https://github.com/PunisherCCC/Max-Ui.git && cd max-ui
 ./build.sh
 ```
 
 ## E2E ??
 
-![E2E ??](https://raw.githubusercontent.com/Sir-MmD/max-ui/refs/heads/main/media/test_unit.png)
+![E2E ??](https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/media/test_unit.png)
 
 ???? `test_unit` ??????????????? Python ??? **E2E** ??,?????????????:
 

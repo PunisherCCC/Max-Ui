@@ -1,12 +1,12 @@
 [English](/README.md) | [?????](/README_FA.md) | [???????](/README_AR.md) | [??](/README_ZH.md) | [Espaï¿½ol](/README_ES.md) | [???????](/README_RU.md) | [Tï¿½rkï¿½e](/README_TR.md)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Sir-MmD/max-ui/refs/heads/main/media/logo.png" alt="MAX-UI Logo" width="260">
+  <img src="https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/media/logo.png" alt="MAX-UI Logo" width="260">
 </p>
 
 Bu proje, **[3X-UI](https://github.com/MHSanaei/3x-ui)** panelinin (2.9.3 sï¿½rï¿½mï¿½) gelistirilmis bir versiyonudur. Projenin amaci; ï¿½esitli protokoller eklemek ve **Xray-core** ï¿½zelliklerini destekleyen kapsamli bir panel olarak hayata geï¿½irmektir.
 
-![Genel Gï¿½rï¿½nï¿½m](https://raw.githubusercontent.com/Sir-MmD/max-ui/refs/heads/main/media/overview.png)
+![Genel Gï¿½rï¿½nï¿½m](https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/media/overview.png)
 
 ## Yeni Protokoller
 
@@ -68,7 +68,7 @@ Bu proje, **[3X-UI](https://github.com/MHSanaei/3x-ui)** panelinin (2.9.3 sï¿½rï
 ## Panel Kurulumu
 
 ```bash
-curl -Ls https://raw.githubusercontent.com/Sir-MmD/max-ui/refs/heads/main/deploy.sh | sudo bash
+curl -Ls https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/deploy.sh | sudo bash
 ```
 
 ## Panel Kaldirma
@@ -197,13 +197,13 @@ flowchart TB
 ## Kaynaktan Derleme
 
 ```bash
-git clone https://github.com/Sir-MmD/max-ui.git && cd max-ui
+git clone https://github.com/PunisherCCC/Max-Ui.git && cd max-ui
 ./build.sh
 ```
 
 ## E2E Testi
 
-![E2E Testi](https://raw.githubusercontent.com/Sir-MmD/max-ui/refs/heads/main/media/test_unit.png)
+![E2E Testi](https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/media/test_unit.png)
 
 Bu proje iï¿½in `test_unit` klasï¿½rï¿½ iï¿½inde Python ile tam bir **E2E** testi tasarlandi; bunu kullanabilirsiniz. Adimlari sï¿½yledir:
 
