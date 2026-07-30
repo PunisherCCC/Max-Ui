@@ -193,7 +193,7 @@ body.dark .bo-shell::before {
 .bo-rail-item {
   display:flex; flex-direction:column; align-items:center; gap:7px;
   width:108px; padding:11px 6px 10px;
-  border-radius:var(--radius-md); border:none; background:transparent;
+  border-radius:var(--radius-md); border:1px solid transparent; background:transparent;
   color:var(--text-3); cursor:pointer; text-decoration:none;
   transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }

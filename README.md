@@ -1,24 +1,23 @@
 # Max-ui
 
-Max-ui is an extended VPN/proxy management panel based on 3X-UI. It keeps the familiar Xray-core workflow and adds more VPN protocols, reseller/admin features, optional Sing-box core support, and quota accounting controls for operators who need more than a basic inbound manager.
+Max-ui is a customized VPN/proxy management panel based on 3X-UI. It keeps the familiar Xray-core panel workflow, adds more VPN protocols, includes an optional Sing-box runtime mode, and ships operator-focused controls for traffic accounting, admins, resellers, bulk actions, and server management.
 
-> This repository is a customized fork intended to be published as **Max-ui**.
+## What Is Included
 
-## Highlights
-
-- Xray-core management with the existing inbound/outbound UI.
-- Optional Sing-box core mode from a configurable JSON template.
-- Per-inbound configurable bandwidth multiplier for quota accounting.
-- Multi-admin access control with per-inbound ownership.
+- Xray-core panel management.
+- Optional Sing-box core runner from a validated JSON template.
+- Per-inbound bandwidth multiplier for quota/accounting only.
+- Multi-admin support with per-inbound access.
 - Reseller accounts with metered traffic balance.
-- Bulk operations for clients and inbounds.
-- Export account links as TXT and PDF.
-- Account freeze/unfreeze support.
-- Built-in and bundled support for additional VPN protocols.
+- Bulk client and inbound operations.
+- Account freeze/unfreeze.
+- Link export as TXT and PDF.
+- Improved web UI theme and improved Ubuntu/server-side `max-ui` menu.
+- GitHub Actions build and release pipeline.
 
 ## Supported Protocols
 
-- VMess, VLESS, Trojan, Shadowsocks, Hysteria, WireGuard and other Xray-supported protocols.
+- Xray protocols such as VMess, VLESS, Trojan, Shadowsocks, Hysteria, WireGuard and others supported by the panel.
 - PPTP
 - L2TP RAW
 - L2TP/IPsec
@@ -31,45 +30,6 @@ Max-ui is an extended VPN/proxy management panel based on 3X-UI. It keeps the fa
 - MTProto Proxy
 - SSH gateway
 
-## Core Selection
-
-Max-ui can start either:
-
-- **Xray-core**: the fully integrated default core.
-- **Sing-box**: an alternate core started from the Sing-box template in panel settings.
-
-Sing-box support is designed as a guarded alternate runtime. Max-ui validates the Sing-box JSON template before starting the process. Automatic conversion from every Xray inbound to Sing-box JSON is not included yet.
-
-Expected Sing-box binary location:
-
-```text
-bin/sing-box-<GOOS>-<GOARCH>
-```
-
-Generated Sing-box config location:
-
-```text
-bin/sing-box.json
-```
-
-## Bandwidth Multiplier
-
-Each inbound can enable a bandwidth multiplier for accounting only.
-
-Example:
-
-- Multiplier: `2`
-- Actual traffic: `1 GB`
-- Counted quota usage: `2 GB`
-
-The multiplier:
-
-- Applies from the first byte.
-- Applies equally to upload and download.
-- Affects quota/accounting counters only.
-- Does not throttle or increase actual network throughput.
-- Keeps lifetime `all_time` traffic as raw real usage.
-
 ## Install
 
 The installer downloads the latest `max-ui-amd64` release asset from this repository.
@@ -78,7 +38,7 @@ The installer downloads the latest `max-ui-amd64` release asset from this reposi
 curl -Ls https://raw.githubusercontent.com/PunisherCCC/Max-Ui/refs/heads/main/deploy.sh | sudo bash
 ```
 
-After installation, open the management menu with:
+After installation, open the server menu with:
 
 ```bash
 max-ui
@@ -90,55 +50,94 @@ max-ui
 sudo /opt/max-ui/max-ui-amd64 --uninstall
 ```
 
+## Core Modes
+
+Max-ui can run either:
+
+- **Xray-core**: the default and fully integrated core.
+- **Sing-box**: an alternate runtime started from the Sing-box template in panel settings.
+
+Sing-box mode validates the JSON template before start and writes it to:
+
+```text
+bin/sing-box.json
+```
+
+Expected Sing-box binary path:
+
+```text
+bin/sing-box-<GOOS>-<GOARCH>
+```
+
+Current scope: Sing-box is a guarded alternate runtime. Automatic conversion of every Xray inbound into Sing-box JSON is not included yet.
+
+## Bandwidth Multiplier
+
+Each inbound can enable a multiplier that affects quota/accounting only.
+
+Example:
+
+- Multiplier: `2`
+- Actual traffic: `1 GB`
+- Counted quota usage: `2 GB`
+
+The multiplier:
+
+- Applies from the first byte.
+- Applies equally to upload and download.
+- Does not change actual throughput.
+- Keeps lifetime `all_time` traffic as raw real usage.
+- Applies to both client counters and inbound counters.
+
+## GitHub Builds
+
+GitHub Actions builds and smoke-checks the Linux amd64 binary on every push to `main`.
+
+On version tags such as `v1.8.7`, the workflow creates a GitHub Release and uploads:
+
+```text
+max-ui-amd64
+```
+
+The install command uses the latest release asset.
+
 ## Build From Source
 
 Requirements:
 
 - Go
 - Git
-- A Linux build environment for production binaries
-
-Clone and build:
+- Linux build environment
+- CGO toolchain for SQLite
 
 ```bash
 git clone https://github.com/PunisherCCC/Max-Ui.git
-cd max-ui
+cd Max-Ui
 go mod download
-go build -o max-ui
+CGO_ENABLED=1 go build -o max-ui-amd64 main.go
+./max-ui-amd64 -v
 ```
 
-## GitHub Builds
+## Verification
 
-GitHub Actions builds and smoke-checks the Linux amd64 binary on every push to `main`.
+The GitHub build workflow verifies:
 
-- Open **Actions -> Build** to download the latest build artifact.
-- Push a version tag like `v1.8.5` to create a GitHub Release with `max-ui-amd64`.
-- The install command above uses the latest GitHub Release asset.
+- Go modules download correctly.
+- Focused traffic multiplier regression tests pass.
+- The Linux amd64 binary compiles.
+- The compiled binary can print its version.
+- A release asset is published for version tags.
 
-## Development Notes
+## Notes
 
-The Go module path currently remains compatible with the upstream 3X-UI package path:
+- The Go module path remains compatible with upstream 3X-UI imports:
 
 ```text
 github.com/mhsanaei/3x-ui/v2
 ```
 
-This keeps imports stable while the project is being renamed and customized.
-
-## Recent Custom Changes
-
-- Project branding changed from vpn-ui to Max-ui.
-- Added Sing-box process support beside Xray-core.
-- Added panel setting to switch active proxy core.
-- Added Sing-box template configuration in Xray/core settings.
-- Updated traffic multiplier behavior to be per-inbound accounting from byte zero.
-- Removed the old multiplier threshold field from the active inbound form.
-
-## Tested Systems
-
-This project is intended for modern Linux servers. The original panel targets Debian, Ubuntu, Fedora, AlmaLinux, Rocky Linux, CentOS Stream, and Arch Linux variants, but VPN daemon behavior can vary by kernel and distribution.
-
-For production use, test on a clean server before migrating live users.
+- Some bundled runtime assets are generated during full release builds. This repository keeps placeholder files so normal GitHub compilation works from a clean checkout.
+- For production use, test on a clean Ubuntu or Debian server before migrating live users.
 
 ## License
 
