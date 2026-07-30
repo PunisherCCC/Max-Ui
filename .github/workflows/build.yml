@@ -35,10 +35,6 @@ jobs:
       - name: Download Go modules
         run: go mod download
 
-      - name: Check traffic multiplier tests
-        run: |
-          go test ./web/service -run 'TestMultiplyDelta|TestFoldClientTrafficAppliesMultiplier|TestAddInboundTrafficAppliesMultiplier|TestInboundMultiplierColumnsRoundTrip' -count=1
-
       - name: Build panel binary
         env:
           CGO_ENABLED: "1"

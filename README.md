@@ -109,7 +109,7 @@ go build -o max-ui
 
 ## GitHub Builds
 
-GitHub Actions builds the Linux amd64 binary on every push to `main`.
+GitHub Actions builds and smoke-checks the Linux amd64 binary on every push to `main`.
 
 - Open **Actions -> Build** to download the latest build artifact.
 - Push a version tag like `v1.8.5` to create a GitHub Release with `max-ui-amd64`.
