@@ -2,6 +2,7 @@ package service
 
 import (
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"syscall"
