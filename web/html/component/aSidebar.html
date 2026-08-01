@@ -5,11 +5,12 @@
         <div class="bo-rail-brand">
             <a href="{{ .base_path }}panel/" aria-label="MAX-UI">
                 <img src="{{ .base_path }}assets/img/logo.png" alt="MAX-UI" />
+                <span>Max UI</span>
             </a>
         </div>
 
         <div class="bo-rail-nav">
-            <a v-for="tab in tabs" :key="tab.key" class="bo-rail-item"
+            <a v-for="tab in navTabs" :key="tab.key" class="bo-rail-item"
                 :class="{ 'is-active': isActive(tab.key) }" :href="tab.key"
                 :aria-current="isActive(tab.key) ? 'page' : false"
                 :title="collapsed ? tab.title : false"
@@ -20,6 +21,19 @@
         </div>
 
         <div class="bo-rail-foot">
+            <div class="bo-rail-status" :title="collapsed ? 'Panel online' : false">
+                <span class="bo-rail-status-dot"></span>
+                <span>
+                    <strong>Panel</strong>
+                    <small>Online</small>
+                </span>
+            </div>
+            <a v-if="logoutTab" class="bo-rail-item bo-rail-logout"
+                :href="logoutTab.key" :title="collapsed ? logoutTab.title : false"
+                @click.prevent="openLink(logoutTab.key)">
+                <a-icon :type="logoutTab.icon"></a-icon>
+                <span v-text="logoutTab.title"></span>
+            </a>
             <a-theme-switch></a-theme-switch>
             <button type="button" class="bo-rail-collapse" @click="toggleCollapse"
                 :aria-expanded="!collapsed" :aria-label="collapsed ? expandLabel : collapseLabel"
@@ -101,7 +115,8 @@
                     {
                         key: '{{ .base_path }}logout/',
                         icon: 'logout',
-                        title: '{{ i18n "menu.logout"}}'
+                        title: '{{ i18n "menu.logout"}}',
+                        isLogout: true
                     },
                 ],
                 requestUri: '{{ .request_uri }}',
@@ -109,6 +124,14 @@
                 collapseLabel: '{{ i18n "menu.collapse"}}',
                 expandLabel: '{{ i18n "menu.expand"}}',
             }
+        },
+        computed: {
+            navTabs() {
+                return this.tabs.filter(tab => !tab.isLogout);
+            },
+            logoutTab() {
+                return this.tabs.find(tab => tab.isLogout);
+            },
         },
         methods: {
             // The active tab used to be handed to ant's a-menu as selected-keys.

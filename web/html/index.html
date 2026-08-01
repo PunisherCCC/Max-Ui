@@ -34,6 +34,101 @@
 
   <div class="bo-bento" v-else>
 
+    <!-- ===== screenshot-style metric row ===== -->
+    <section class="bo-dash-stats" aria-label="Overview metrics">
+      <article class="bo-dash-stat bo-dash-stat--violet">
+        <span class="bo-dash-stat-icon"><svg class="bo-icon" aria-hidden="true"><use href="#bo-i-arrow-up"></use></svg></span>
+        <span class="bo-dash-stat-label">{{ i18n "pages.inbounds.totalDownUp" }}</span>
+        <strong class="bo-dash-stat-value num">[[ SizeFormatter.sizeFormat(status.netTraffic.sent) ]] / [[ SizeFormatter.sizeFormat(status.netTraffic.recv) ]]</strong>
+        <small>This Month</small>
+      </article>
+      <article class="bo-dash-stat bo-dash-stat--cyan">
+        <span class="bo-dash-stat-icon"><svg class="bo-icon" aria-hidden="true"><use href="#bo-i-box"></use></svg></span>
+        <span class="bo-dash-stat-label">{{ i18n "pages.inbounds.totalUsage" }}</span>
+        <strong class="bo-dash-stat-value num">[[ SizeFormatter.sizeFormat(status.netTraffic.sent + status.netTraffic.recv) ]]</strong>
+        <small>This Month</small>
+      </article>
+      <article class="bo-dash-stat bo-dash-stat--green">
+        <span class="bo-dash-stat-icon"><svg class="bo-icon" aria-hidden="true"><use href="#bo-i-zap"></use></svg></span>
+        <span class="bo-dash-stat-label">{{ i18n "pages.inbounds.allTimeTrafficUsage" }}</span>
+        <strong class="bo-dash-stat-value num">[[ SizeFormatter.sizeFormat(overviewTotals.allTime) ]]</strong>
+        <small>All Time</small>
+      </article>
+      <article class="bo-dash-stat bo-dash-stat--amber">
+        <span class="bo-dash-stat-icon"><svg class="bo-icon" aria-hidden="true"><use href="#bo-i-grid"></use></svg></span>
+        <span class="bo-dash-stat-label">{{ i18n "pages.inbounds.inboundCount" }}</span>
+        <strong class="bo-dash-stat-value num">[[ overviewInbounds.length ]]</strong>
+        <small>Active</small>
+      </article>
+      <article class="bo-dash-stat bo-dash-stat--purple">
+        <span class="bo-dash-stat-icon"><svg class="bo-icon" aria-hidden="true"><use href="#bo-i-user"></use></svg></span>
+        <span class="bo-dash-stat-label">{{ i18n "clients" }}</span>
+        <strong class="bo-dash-stat-value num">[[ userStats.total ]]</strong>
+        <small>{{ i18n "online" }} [[ userStats.online ]]</small>
+      </article>
+    </section>
+
+    {{ if .perms.accessInbounds }}
+    <article class="bo-tile bo-t-inbounds" aria-label='{{ i18n "menu.inbounds" }}'>
+      <div class="bo-tile-head">
+        <div>
+          <p class="bo-panel-eyebrow">MANAGEMENT</p>
+          <h3 class="bo-tile-title">{{ i18n "menu.inbounds" }}</h3>
+        </div>
+        <div class="bo-table-tools">
+          <a-button type="primary" icon="plus" href="{{ .base_path }}panel/inbounds">{{ i18n "pages.inbounds.addInbound" }}</a-button>
+          <a-button icon="tool" href="{{ .base_path }}panel/inbounds">{{ i18n "pages.inbounds.generalActions" }}</a-button>
+          <button type="button" class="bo-icon-btn" @click="fetchOverviewInbounds" aria-label="Refresh">
+            <svg class="bo-icon bo-icon-16" aria-hidden="true"><use href="#bo-i-refresh"></use></svg>
+          </button>
+        </div>
+      </div>
+      <div class="bo-overview-table-wrap">
+        <table class="bo-overview-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>{{ i18n "pages.inbounds.remark" }}</th>
+              <th>{{ i18n "pages.inbounds.protocol" }}</th>
+              <th>{{ i18n "pages.inbounds.port" }}</th>
+              <th>{{ i18n "clients" }}</th>
+              <th>{{ i18n "pages.inbounds.traffic" }}</th>
+              <th>{{ i18n "pages.inbounds.allTimeTrafficUsage" }}</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="!overviewInbounds.length">
+              <td colspan="9" class="bo-empty-row">{{ i18n "noData" }}</td>
+            </tr>
+            <tr v-for="(ib, index) in overviewInbounds.slice(0, 5)" :key="ib.id">
+              <td class="num">[[ index + 1 ]]</td>
+              <td>[[ ib.remark || ib.tag || '-' ]]</td>
+              <td><span class="bo-proto-pill">[[ (ib.protocol || '-').toUpperCase() ]]</span></td>
+              <td class="num">[[ ib.port || '-' ]]</td>
+              <td class="num">[[ overviewClientCount(ib) ]]</td>
+              <td class="num">[[ SizeFormatter.sizeFormat((Number(ib.up) || 0) + (Number(ib.down) || 0)) ]]</td>
+              <td class="num">[[ SizeFormatter.sizeFormat(Number(ib.allTime) || 0) ]]</td>
+              <td><span class="bo-health-pill" :class="ib.enable ? '' : 'bo-health-pill--warn'">[[ ib.enable ? 'Active' : '{{ i18n "disabled" }}' ]]</span></td>
+              <td><a-button size="small" icon="eye" href="{{ .base_path }}panel/inbounds"></a-button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="bo-table-footer">
+        <span>Showing 1 to [[ overviewInbounds.length > 5 ? 5 : overviewInbounds.length ]] of [[ overviewInbounds.length ]] results</span>
+        <div class="bo-pagination-mini">
+          <button type="button" disabled>&lsaquo;</button>
+          <button type="button" class="current">1</button>
+          <button type="button" v-if="overviewInbounds.length > 5">2</button>
+          <button type="button" v-if="overviewInbounds.length > 10">3</button>
+          <button type="button" :disabled="overviewInbounds.length <= 5">&rsaquo;</button>
+        </div>
+      </div>
+    </article>
+    {{ end }}
+
     <!-- ===== identity ===== -->
     <article class="bo-tile bo-t-ident" aria-label='{{ i18n "pages.index.systemStatus" }}'>
       <div class="bo-ident-top">
@@ -249,9 +344,10 @@
               :padding-left="0" :padding-right="0" :padding-top="2" :padding-bottom="2" />
           </div>
         </div>
-
       </div>
-      <div class="bo-divider"></div>
+    </article>
+
+    <article class="bo-tile bo-t-net" aria-label='{{ i18n "pages.index.connectionCount" }}'>
       <div class="bo-tile-head bo-tile-head--sub"><h3 class="bo-tile-title">{{ i18n "pages.index.connectionCount" }}</h3></div>
       <div class="bo-conn-body">
         <div class="bo-conn-stat bo-conn-stat--tcp">
@@ -285,10 +381,28 @@
       <div class="bo-ip-row">
         <span class="bo-ip-label">IPv4</span>
         <span class="bo-ip-value num">[[ showIp ? status.publicIP.ipv4 : maskIp(status.publicIP.ipv4) ]]</span>
+        <button type="button" class="bo-icon-btn bo-icon-btn--ghost bo-ip-copy"
+          :class="copiedIp === 'ipv4' ? 'bo-icon-btn--ok' : ''"
+          @click="copyPublicIp('ipv4')" title='{{ i18n "copy" }}'
+          aria-label='{{ i18n "copy" }} IPv4'>
+          <svg class="bo-icon bo-icon-14" aria-hidden="true">
+            <use v-if="copiedIp === 'ipv4'" href="#bo-i-check-circle"></use>
+            <use v-else href="#bo-i-copy"></use>
+          </svg>
+        </button>
       </div>
       <div class="bo-ip-row">
         <span class="bo-ip-label">IPv6</span>
         <span class="bo-ip-value num">[[ showIp ? status.publicIP.ipv6 : maskIp(status.publicIP.ipv6) ]]</span>
+        <button type="button" class="bo-icon-btn bo-icon-btn--ghost bo-ip-copy"
+          :class="copiedIp === 'ipv6' ? 'bo-icon-btn--ok' : ''"
+          @click="copyPublicIp('ipv6')" title='{{ i18n "copy" }}'
+          aria-label='{{ i18n "copy" }} IPv6'>
+          <svg class="bo-icon bo-icon-14" aria-hidden="true">
+            <use v-if="copiedIp === 'ipv6'" href="#bo-i-check-circle"></use>
+            <use v-else href="#bo-i-copy"></use>
+          </svg>
+        </button>
       </div>
     </article>
 
@@ -1314,8 +1428,8 @@
     // can re-render without going back to the server for every checkbox click.
     entries: [],
     // Distinct cores present, and which are currently shown. Rebuilt wholesale
-    // on each fetch: assigning a NEW object is what makes Vue 2 track keys that
-    // did not exist when the data option was declared.
+    // on each fetch so the Vue 3 compat runtime observes keys that did not
+    // exist when the data option was declared.
     sources: [],
     enabled: {},
     // Live tail. The timer lives in LiveLog, keyed, so closing the modal can
@@ -1512,6 +1626,7 @@
       loadingTip: '{{ i18n "loading"}}',
       showAlert: false,
       showIp: false,
+      copiedIp: '',
       ipLimitEnable: false,
       customGeoColumns,
       customGeoList: [],
@@ -1568,7 +1683,9 @@
       distroModal: { visible: false, pretty: '', tested: '' },
 
       // --- redesign shell + bento tiles ---------------------------------
+      pageEyebrow: 'DASHBOARD',
       pageTitle: '{{ i18n "menu.dashboard" }}',
+      pageSubtitle: 'Live server, traffic, inbound, and service health',
       pageClass: 'index-page',
       // Distro name for the identity tile. Populated by checkDistroSupport()
       // regardless of whether the unsupported-distro warning fires.
@@ -1586,8 +1703,18 @@
       // '' means every interface, which is what the aggregate netIO already is.
       ifaceFilter: '',
       userStats: { total: 0, online: 0, depleted: 0, expiring: 0 },
+      overviewInbounds: [],
     },
     computed: {
+      overviewTotals() {
+        const rows = this.overviewInbounds || [];
+        return rows.reduce((acc, ib) => {
+          acc.up += Number(ib.up) || 0;
+          acc.down += Number(ib.down) || 0;
+          acc.allTime += Number(ib.allTime) || 0;
+          return acc;
+        }, { up: 0, down: 0, allTime: 0 });
+      },
       // geofileStatus keyed by file name, for the Geofiles list. Empty until the
       // fetch lands (or if it fails), and the list checks for a row before
       // rendering one, so an unreachable endpoint shows no badge rather than a
@@ -1867,6 +1994,26 @@
       maskIp(ip) {
         return (ip || '').replace(/[^:.]/g, '•');
       },
+      async copyPublicIp(kind) {
+        const publicIP = this.status && this.status.publicIP ? this.status.publicIP : {};
+        const ip = publicIP[kind] || '';
+        if (!ip) {
+          this.$message.warning('{{ i18n "noData" }}');
+          return;
+        }
+        const ok = await ClipboardManager.copyText(ip);
+        if (!ok) {
+          this.copiedIp = '';
+          this.$message.error('{{ i18n "somethingWentWrong" }}');
+          return;
+        }
+        this.copiedIp = kind;
+        this.$message.success('{{ i18n "copied" }}');
+        clearTimeout(this.ipCopyTimer);
+        this.ipCopyTimer = setTimeout(() => {
+          if (this.copiedIp === kind) this.copiedIp = '';
+        }, 1600);
+      },
       // Rate for the selected interface, falling back to the aggregate when
       // "All" is chosen or the backend has not sent per-NIC counters yet.
       ifaceRate(dir) {
@@ -1926,6 +2073,36 @@
           const msg = await HttpUtil.get('/panel/api/server/userStats');
           if (msg && msg.success && msg.obj) this.userStats = msg.obj;
         } catch (e) { /* best-effort */ }
+      },
+      async fetchOverviewInbounds() {
+        if (!PERMS.accessInbounds) return;
+        try {
+          const msg = await HttpUtil.get('/panel/api/inbounds/list');
+          if (msg && msg.success) {
+            this.overviewInbounds = msg.obj || [];
+          }
+        } catch (e) { /* best-effort dashboard table */ }
+      },
+      overviewClientCount(dbInbound) {
+        if (!dbInbound) return 0;
+        try {
+          const s = typeof dbInbound.settings === 'string'
+            ? JSON.parse(dbInbound.settings || '{}')
+            : (dbInbound.settings || {});
+          const lists = [
+            s.clients, s.vlesses, s.vmesses, s.trojans, s.shadowsockses,
+            s.users, s.accounts, s.peers,
+          ];
+          for (const list of lists) {
+            if (Array.isArray(list)) return list.length;
+          }
+        } catch (e) { /* fall through */ }
+        try {
+          const stats = JSON.parse(dbInbound.clientStats || '[]');
+          return Array.isArray(stats) ? stats.length : 0;
+        } catch (e) {
+          return 0;
+        }
       },
       // The modal's row/level/syslog controls and its refresh icon go through
       // here, so they re-run the loader that opened it instead of always
@@ -2674,6 +2851,7 @@
       await this.getCoreStatuses();
       this.checkDistroSupport();
       this.fetchUserStats();
+      this.fetchOverviewInbounds();
       this.fetchServerName();
       this.fetchPanelLocation();
       // Up front, not only in openGeofiles(), so the badges are already there when

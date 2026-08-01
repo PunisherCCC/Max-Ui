@@ -101,6 +101,29 @@
     // ALLOWS: the routes stay reachable by direct request and the middleware is
     // the enforcement.
     const PERMS = Object.assign({}, {{ .perms }});
+
+    window.__maxUiFocusSearch = function () {
+      const root = document.querySelector('.bo-main') || document;
+      const target = root.querySelector(
+        'input[type="search"], input[placeholder], input:not([type]), textarea, .ant-select-search__field'
+      );
+      if (target && typeof target.focus === 'function') {
+        target.focus();
+        return;
+      }
+      const content = document.querySelector('.bo-content');
+      if (content) content.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    };
+
+    window.__maxUiRevealAlerts = function () {
+      const alert = document.querySelector('.bo-main .ant-alert, #message .ant-message');
+      if (alert) {
+        alert.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        return;
+      }
+      const content = document.querySelector('.bo-content');
+      if (content) content.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    };
   </script>
 {{ end }}
 
@@ -169,6 +192,8 @@
 <symbol id="bo-i-box" viewBox="0 0 24 24"><path d="M12 2.6 20.5 7v10L12 21.4 3.5 17V7z"/><polyline points="3.5 7 12 11.5 20.5 7"/><line x1="12" y1="11.5" x2="12" y2="21.4"/></symbol>
 <symbol id="bo-i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
 <symbol id="bo-i-trash" viewBox="0 0 24 24"><polyline points="4 6.5 20 6.5"/><path d="M9 6.5V4.6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1.9"/><path d="M6.2 6.5 7 19.6a1 1 0 0 0 1 .9h8a1 1 0 0 0 1-.9l.8-13.1"/><line x1="10.2" y1="10" x2="10.5" y2="17"/><line x1="13.8" y1="10" x2="13.5" y2="17"/></symbol>
+<symbol id="bo-i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><line x1="15.7" y1="15.7" x2="21" y2="21"/></symbol>
+<symbol id="bo-i-bell" viewBox="0 0 24 24"><path d="M18 9.8a6 6 0 1 0-12 0c0 7-3 7.7-3 7.7h18s-3-.7-3-7.7z"/><path d="M9.8 20a2.4 2.4 0 0 0 4.4 0"/></symbol>
 </defs>
 </svg>
 {{ end }}
@@ -181,7 +206,42 @@
     <header class="bo-topbar">
       <div class="bo-topbar-inner">
         <div class="bo-topbar-left">
-          <h1 class="bo-topbar-title" v-text="pageTitle"></h1>
+          <div class="bo-title-stack">
+            <p class="bo-topbar-eyebrow" v-if="$data.pageEyebrow" v-text="$data.pageEyebrow"></p>
+            <h1 class="bo-topbar-title" v-text="pageTitle"></h1>
+            <p class="bo-topbar-subtitle" v-if="$data.pageSubtitle" v-text="$data.pageSubtitle"></p>
+          </div>
+        </div>
+        <div class="bo-topbar-right">
+          <button type="button" class="bo-icon-btn" title="Search" aria-label="Search"
+            onclick="window.__maxUiFocusSearch && window.__maxUiFocusSearch()">
+            <svg class="bo-icon bo-icon-16" aria-hidden="true"><use href="#bo-i-search"></use></svg>
+          </button>
+          <a-theme-switch></a-theme-switch>
+          <button type="button" class="bo-icon-btn bo-alert-btn" title="Notifications" aria-label="Notifications"
+            onclick="window.__maxUiRevealAlerts && window.__maxUiRevealAlerts()">
+            <svg class="bo-icon bo-icon-16" aria-hidden="true"><use href="#bo-i-bell"></use></svg>
+            <span aria-hidden="true"></span>
+          </button>
+          <span class="bo-host-chip" title="{{ .host }}">
+            <svg class="bo-icon bo-icon-14" aria-hidden="true"><use href="#bo-i-globe"></use></svg>
+            <span>{{ .host }}</span>
+          </span>
+          <span class="bo-version-chip">
+            <svg class="bo-icon bo-icon-14" aria-hidden="true"><use href="#bo-i-shield"></use></svg>
+            <span>{{ .cur_ver }}</span>
+          </span>
+          <span class="bo-status-chip">
+            <span class="bo-status-dot"></span>
+            <span>Online</span>
+          </span>
+          <span class="bo-user-chip" title="Admin">
+            <span class="bo-avatar">A</span>
+            <span>
+              <strong>Admin</strong>
+              <small>Administrator</small>
+            </span>
+          </span>
         </div>
       </div>
     </header>

@@ -394,26 +394,27 @@ badge() {
 menu_cell() {
     local n="$1" label="$2" hint="${3:-}"
     if [[ -n "$n" ]]; then
-        printf '%s%2s%s  %-20s %s%-17s%s' "$GREEN" "$n" "$R" "$label" "$D" "$hint" "$R"
+        printf ' %s%2s%s  %-20s %s%-14s%s' "$GREEN" "$n" "$R" "$label" "$D" "$hint" "$R"
     else
-        printf '%-45s' ""
+        printf '%-43s' ""
     fi
 }
 
 menu_row() {
-    printf ' | '
+    printf ' %s|%s ' "$D" "$R"
     menu_cell "$1" "$2" "${3:-}"
-    printf ' | '
+    printf ' %s|%s ' "$D" "$R"
     menu_cell "$4" "$5" "${6:-}"
-    printf ' |\n'
+    printf ' %s|%s\n' "$D" "$R"
 }
 
 menu_section() {
-    printf ' | %s%-42s%s | %s%-42s%s |\n' "$B$WHITE" "$1" "$R" "$B$WHITE" "$2" "$R"
+    printf ' %s|%s %s%-41s%s %s|%s %s%-41s%s %s|%s\n' \
+        "$D" "$R" "$B$TEAL" "$1" "$R" "$D" "$R" "$B$TEAL" "$2" "$R" "$D" "$R"
 }
 
 box_line() {
-    printf ' +%s+%s+\n' "$(printf '%.0s-' {1..47})" "$(printf '%.0s-' {1..47})"
+    printf ' %s+%s+%s+%s\n' "$D" "$(printf '%.0s-' {1..45})" "$(printf '%.0s-' {1..45})" "$R"
 }
 
 show_menu() {
@@ -427,12 +428,12 @@ show_menu() {
     state_c="$(state_color "$state")"
 
     printf '\n'
-    printf ' %s+%s+%s\n' "$D" "$(printf '%.0s-' {1..97})" "$R"
-    printf ' | %sMAX-UI%s %sserver console%s%62s%s v%-8s%s |\n' \
-        "$B$TEAL" "$R" "$D" "$R" "" "$D" "$version" "$R"
-    printf ' | panel: %s  unit: %s%-18s%s state: %s |\n' \
-        "$(badge "$panel")" "$TEAL" "$unit" "$R" "$(badge "$state")"
-    printf ' %s+%s+%s\n' "$D" "$(printf '%.0s-' {1..97})" "$R"
+    printf ' %s+%s+%s\n' "$D" "$(printf '%.0s-' {1..93})" "$R"
+    printf ' %s|%s %sMax UI%s %sserver console%s%56s%s v%-8s%s %s|%s\n' \
+        "$D" "$R" "$B$TEAL" "$R" "$D" "$R" "" "$D" "$version" "$R" "$D" "$R"
+    printf ' %s|%s panel %s  unit %s%-18s%s  state %s %40s%s|%s\n' \
+        "$D" "$R" "$(badge "$panel")" "$TEAL" "$unit" "$R" "$(badge "$state")" "" "$D" "$R"
+    printf ' %s+%s+%s\n' "$D" "$(printf '%.0s-' {1..93})" "$R"
     box_line
     menu_section "SYSTEM" "ACCOUNT"
     menu_row 1  "Update panel"    "latest release" 3  "Change username" ""
@@ -459,7 +460,7 @@ menu_loop() {
     local choice
     while true; do
         show_menu
-        printf '  %schoose%s [0-17]: ' "$B$TEAL" "$R"
+        printf '  %sselect action%s [0-17]: ' "$B$TEAL" "$R"
         # EOF (a piped stdin) must leave, not spin forever on an empty read.
         read -r choice || { printf '\n'; return 0; }
         printf '\n'

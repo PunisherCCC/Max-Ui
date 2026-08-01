@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VPN-UI Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a href="#" class="brand">
+        <span class="brand-mark">◇</span>
+        <span>VPN-UI</span>
+      </a>
+
+      <nav class="nav">
+        <a class="nav-item active" href="#"><span>⌂</span><span>Overview</span></a>
+        <a class="nav-item" href="#"><span>⇅</span><span>Inbounds</span></a>
+        <a class="nav-item" href="#"><span>⚙</span><span>Panel Settings</span></a>
+        <a class="nav-item" href="#"><span>⌕</span><span>Xray Configs</span></a>
+        <a class="nav-item" href="#"><span>▦</span><span>Core Settings</span></a>
+        <a class="nav-item" href="#"><span>♙</span><span>Admins</span></a>
+        <a class="nav-item" href="#"><span>▤</span><span>Resellers</span></a>
+        <a class="nav-item" href="#"><span>▱</span><span>Logs</span></a>
+        <a class="nav-item" href="#"><span>⌘</span><span>Tools</span></a>
+        <a class="nav-item" href="#"><span>ⓘ</span><span>System Info</span></a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="mini-status">
+          <div>
+            <span class="eyebrow">SYSTEM STATUS</span>
+            <strong>Online</strong>
+          </div>
+          <span class="status-dot"></span>
+        </div>
+        <a href="#" class="logout">↪ <span>Log out</span></a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">DASHBOARD</p>
+          <h1>Overview</h1>
+        </div>
+
+        <div class="top-actions">
+          <button class="icon-btn" aria-label="Search">⌕</button>
+          <button class="icon-btn" aria-label="Theme">☾</button>
+          <button class="icon-btn notification" aria-label="Notifications">♢<span>3</span></button>
+          <div class="user">
+            <div class="avatar">A</div>
+            <div>
+              <strong>Admin</strong>
+              <small>Administrator</small>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-icon purple">↗</div>
+          <div>
+            <span>Total Sent / Received</span>
+            <strong>12.45 GB / 18.72 GB</strong>
+            <small>This month</small>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon cyan">▣</div>
+          <div>
+            <span>Total Usage</span>
+            <strong>31.17 GB</strong>
+            <small>This month</small>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon green">⌁</div>
+          <div>
+            <span>All-Time Usage</span>
+            <strong>245.69 GB</strong>
+            <small>All time</small>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon orange">◉</div>
+          <div>
+            <span>Total Inbounds</span>
+            <strong>24</strong>
+            <small>Active</small>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-icon violet">♙</div>
+          <div>
+            <span>Clients</span>
+            <strong>128</strong>
+            <small>Online</small>
+          </div>
+        </article>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="panel inbounds-panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">MANAGEMENT</p>
+              <h2>Inbounds</h2>
+            </div>
+            <div class="panel-actions">
+              <button class="btn primary">＋ Add Inbound</button>
+              <button class="btn">⚡ General Actions</button>
+              <button class="icon-btn">↻</button>
+              <button class="icon-btn">▽</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Protocol</th>
+                  <th>Port</th>
+                  <th>Clients</th>
+                  <th>Traffic</th>
+                  <th>All-time</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td><td>Netflix Premium</td><td><span class="tag purple-tag">VLESS</span></td><td>443</td><td>32</td><td>2.45 GB</td><td>45.21 GB</td><td>10d 5h</td><td><span class="status active-status">Active</span></td><td class="actions">◉ ✎ ⋮</td>
+                </tr>
+                <tr>
+                  <td>2</td><td>YouTube 4K</td><td><span class="tag blue-tag">VMESS</span></td><td>8443</td><td>18</td><td>1.21 GB</td><td>32.12 GB</td><td>8d 11h</td><td><span class="status active-status">Active</span></td><td class="actions">◉ ✎ ⋮</td>
+                </tr>
+                <tr>
+                  <td>3</td><td>Gaming Proxy</td><td><span class="tag green-tag">TROJAN</span></td><td>2053</td><td>12</td><td>892 MB</td><td>15.45 GB</td><td>6d 2h</td><td><span class="status active-status">Active</span></td><td class="actions">◉ ✎ ⋮</td>
+                </tr>
+                <tr>
+                  <td>4</td><td>TikTok Unlimited</td><td><span class="tag purple-tag">VLESS</span></td><td>2096</td><td>9</td><td>653 MB</td><td>12.34 GB</td><td>5d 7h</td><td><span class="status active-status">Active</span></td><td class="actions">◉ ✎ ⋮</td>
+                </tr>
+                <tr>
+                  <td>5</td><td>Secure Browsing</td><td><span class="tag orange-tag">SHADOWSOCKS</span></td><td>8388</td><td>7</td><td>421 MB</td><td>8.89 GB</td><td>4d 3h</td><td><span class="status active-status">Active</span></td><td class="actions">◉ ✎ ⋮</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <span>Showing 1 to 5 of 24 results</span>
+            <div class="pagination">
+              <button>‹</button><button class="current">1</button><button>2</button><button>3</button><button>4</button><button>›</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel system-panel">
+          <div class="panel-header"><h2>System Status</h2></div>
+
+          <div class="resource">
+            <div class="resource-head"><span>CPU Usage</span><strong>2.01%</strong></div>
+            <small>8 Cores</small>
+            <div class="progress"><i style="width: 22%"></i></div>
+          </div>
+
+          <div class="resource">
+            <div class="resource-head"><span>RAM Usage</span><strong>55.78%</strong></div>
+            <small>4.18 GB / 7.50 GB</small>
+            <div class="progress green-progress"><i style="width: 56%"></i></div>
+          </div>
+
+          <div class="resource">
+            <div class="resource-head"><span>Swap Usage</span><strong>0%</strong></div>
+            <small>0 B / 4.00 GB</small>
+            <div class="progress orange-progress"><i style="width: 4%"></i></div>
+          </div>
+
+          <div class="resource">
+            <div class="resource-head"><span>Storage Usage</span><strong>28.02%</strong></div>
+            <small>27.56 GB / 98.35 GB</small>
+            <div class="progress purple-progress"><i style="width: 28%"></i></div>
+          </div>
+        </article>
+
+        <article class="panel server-panel">
+          <div class="panel-header"><h2>Server Overview</h2></div>
+          <div class="server-title">
+            <div class="server-icon">▤</div>
+            <div><strong>Dashtaghz</strong><small>AlmaLinux 9.8</small></div>
+          </div>
+          <dl class="server-info">
+            <div><dt>Location</dt><dd>Iran, IR</dd></div>
+            <div><dt>RAM</dt><dd>8.00 GB</dd></div>
+            <div><dt>Panel uptime</dt><dd>10d 5h 46m</dd></div>
+            <div><dt>Kernel</dt><dd>5.14.0-687</dd></div>
+            <div><dt>VPN services</dt><dd class="good">12 / 12</dd></div>
+            <div><dt>Virtualization</dt><dd>KVM</dd></div>
+            <div><dt>CPU</dt><dd>Xeon Gold 6230R</dd></div>
+            <div><dt>Panel version</dt><dd>v1.8.8</dd></div>
+          </dl>
+        </article>
+
+        <article class="panel speed-panel">
+          <div class="panel-header">
+            <h2>Speed Overview</h2>
+            <button class="select-btn">All⌄</button>
+          </div>
+          <div class="speed-grid">
+            <div class="speed-card">
+              <span>Upload</span>
+              <strong class="green-text">46.64 KB/s</strong>
+              <svg viewBox="0 0 260 80" preserveAspectRatio="none">
+                <polyline points="0,58 15,30 30,60 45,35 60,53 80,25 100,44 122,31 140,37 162,18 180,53 200,42 220,14 240,48 260,26" />
+              </svg>
+              <footer><span>Sent</span><strong>10.22 GB</strong></footer>
+            </div>
+            <div class="speed-card download">
+              <span>Download</span>
+              <strong>46.69 KB/s</strong>
+              <svg viewBox="0 0 260 80" preserveAspectRatio="none">
+                <polyline points="0,60 15,27 30,58 50,35 70,49 88,44 110,21 130,17 148,39 166,27 184,52 204,34 225,14 242,39 260,28" />
+              </svg>
+              <footer><span>Received</span><strong>13.19 GB</strong></footer>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel network-panel">
+          <div class="panel-header"><h2>Network</h2></div>
+          <div class="connection-grid">
+            <div><span>TCP Connections</span><strong>10,056</strong></div>
+            <div><span>UDP Connections</span><strong>10,013</strong></div>
+          </div>
+          <div class="split-bar"><i></i><b></b></div>
+          <div class="ip-row"><span>IPv4</span><strong>203.0.113.10</strong></div>
+          <div class="ip-row"><span>IPv6</span><strong>2001:db8::1</strong></div>
+        </article>
+
+        <article class="panel services-panel">
+          <div class="panel-header"><h2>VPN Services</h2></div>
+          <div class="services-grid">
+            <div class="service"><i>V</i><div><strong>VLESS</strong><small class="running">● Running</small></div><span>⋯</span></div>
+            <div class="service"><i>V</i><div><strong>VMESS</strong><small class="running">● Running</small></div><span>⋯</span></div>
+            <div class="service"><i>T</i><div><strong>TROJAN</strong><small class="running">● Running</small></div><span>⋯</span></div>
+            <div class="service"><i>S</i><div><strong>SHADOWSOCKS</strong><small class="running">● Running</small></div><span>⋯</span></div>
+            <div class="service"><i>W</i><div><strong>WireGuard</strong><small class="stopped">● Stopped</small></div><span>⋯</span></div>
+            <div class="service"><i>O</i><div><strong>OpenVPN</strong><small class="running">● Running</small></div><span>⋯</span></div>
+            <div class="service"><i>P</i><div><strong>PPTP</strong><small class="stopped">● Stopped</small></div><span>⋯</span></div>
+            <div class="service"><i>L</i><div><strong>L2TP</strong><small class="stopped">● Stopped</small></div><span>⋯</span></div>
+            <div class="service"><i>S</i><div><strong>SSH</strong><small class="running">● Running</small></div><span>⋯</span></div>
+            <div class="service"><i>R</i><div><strong>RADIUS</strong><small class="running">● Running</small></div><span>⋯</span></div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

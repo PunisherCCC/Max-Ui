@@ -1283,7 +1283,9 @@
     mixins: [MediaQueryMixin],
     data: {
       themeSwitcher,
+      pageEyebrow: 'MANAGEMENT',
       pageTitle: '{{ i18n "menu.inbounds"}}',
+      pageSubtitle: 'Manage proxy entries, clients, traffic limits, and accounting multipliers',
       pageClass: 'inbounds-page',
       persianDatepicker,
       loadingStates: {
@@ -2884,8 +2886,9 @@
             }
             this.onlineClients = nextOnlineClients;
             if (onlineChanged) {
-              // Recalculate client counts to update online status
-              // Use $set for Vue 2 reactivity — direct array index assignment is not reactive
+              // Recalculate client counts to update online status.
+              // Keep $set because Vue 3 compat supports this legacy reactive
+              // update path while the Options API pages are migrated.
               this.dbInbounds.forEach(dbInbound => {
                 const inbound = this.inbounds.find(ib => ib.id === dbInbound.id);
                 if (inbound && this.clientCount[dbInbound.id]) {
