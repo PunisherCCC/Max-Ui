@@ -1,11 +1,11 @@
 # Max-ui
 
-Max-ui is a customized VPN/proxy management panel based on 3X-UI. It keeps the familiar Xray-core panel workflow, adds more VPN protocols, includes an optional Sing-box runtime mode, and ships operator-focused controls for traffic accounting, admins, resellers, bulk actions, and server management.
+Max-Ui is a customized VPN/proxy management panel based on 3X-UI. It keeps the familiar panel workflow, adds more VPN protocols, supports switching between Xray-core and Sing-box, and ships operator-focused controls for traffic accounting, admins, resellers, bulk actions, and server management.
 
 ## What Is Included
 
 - Xray-core panel management.
-- Optional Sing-box core runner from a validated JSON template.
+- Database-driven Xray-core and Sing-box runtimes with validated, rollback-safe switching.
 - Per-inbound bandwidth multiplier for quota/accounting only.
 - Multi-admin support with per-inbound access.
 - Reseller accounts with metered traffic balance.
@@ -62,12 +62,16 @@ sudo /opt/max-ui/max-ui-amd64 --uninstall
 
 ## Core Modes
 
-Max-ui can run either:
+Max-Ui can run either:
 
-- **Xray-core**: the default and fully integrated core.
-- **Sing-box**: an alternate runtime started from the Sing-box template in panel settings.
+- **Xray-core**: the default runtime.
+- **Sing-box**: a generated runtime for VLESS, VMess, Trojan, Shadowsocks, Mixed, and HTTP inbounds.
 
-Sing-box mode validates the JSON template before start and writes it to:
+The Sing-box template supplies log, DNS, route, experimental, and outbound settings. Max-Ui replaces its inbound list with enabled database inbounds, removes disabled or depleted clients, translates TLS/Reality and supported V2Ray transports, and enables per-inbound and per-user traffic statistics. The complete generated file is validated by the installed Sing-box binary before the current core is stopped.
+
+Core switching is transactional: Max-Ui only saves the new selection after the target starts successfully. If startup fails, it restores the previous core and returns the validation/startup error to the panel.
+
+The generated runtime file is written to:
 
 ```text
 bin/sing-box.json
@@ -85,7 +89,7 @@ For the Linux amd64 installer this is created as:
 /opt/max-ui/bin/sing-box-linux-amd64
 ```
 
-Current scope: Sing-box is a guarded alternate runtime. Automatic conversion of every Xray inbound into Sing-box JSON is not included yet.
+Enabled protocols that cannot be translated safely, including Max-Ui's separate system VPN services, block a switch to Sing-box with an actionable error instead of being silently omitted. Disable those inbounds or keep Xray active. Traffic multipliers and user quotas use the same accounting pipeline under both cores.
 
 ## Bandwidth Multiplier
 

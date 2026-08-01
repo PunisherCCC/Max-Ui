@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -91,6 +92,9 @@ func (s *XrayService) GetSingBoxErr() error {
 // GetXrayErr returns the error from the Xray process, if any.
 func (s *XrayService) GetXrayErr() error {
 	if s.settingService.GetProxyCore() == "sing-box" {
+		if sbp == nil {
+			return nil
+		}
 		return sbp.GetErr()
 	}
 	if p == nil {
@@ -114,6 +118,9 @@ func (s *XrayService) GetXrayResult() string {
 		return ""
 	}
 	if s.settingService.GetProxyCore() == "sing-box" {
+		if sbp == nil {
+			return ""
+		}
 		result = sbp.GetResult()
 		return result
 	}
@@ -128,10 +135,26 @@ func (s *XrayService) GetXrayResult() string {
 
 // GetXrayVersion returns the version of the running Xray process.
 func (s *XrayService) GetXrayVersion() string {
+	if s.settingService.GetProxyCore() == "sing-box" {
+		return s.GetSingBoxVersion()
+	}
 	if p == nil {
 		return "Unknown"
 	}
 	return p.GetVersion()
+}
+
+func (s *XrayService) GetCoreUptime() uint64 {
+	if s.settingService.GetProxyCore() == "sing-box" {
+		if sbp != nil && sbp.IsRunning() {
+			return sbp.GetUptime()
+		}
+		return 0
+	}
+	if p != nil && p.IsRunning() {
+		return p.GetUptime()
+	}
+	return 0
 }
 
 // RemoveIndex removes an element at the specified index from a slice.
@@ -461,6 +484,49 @@ func (s *XrayService) GetXrayConfig() (*xray.Config, error) {
 	return xrayConfig, nil
 }
 
+// GetSingBoxConfig builds the sing-box runtime config from the same enabled
+// inbounds and client state used by Xray. The stored sing-box JSON is a base
+// template for log, DNS, route, and outbounds; panel-managed inbounds always
+// come from the database.
+func (s *XrayService) GetSingBoxConfig() ([]byte, error) {
+	templateConfig, err := s.settingService.GetSingBoxConfigTemplate()
+	if err != nil {
+		return nil, err
+	}
+	s.inboundService.AddTraffic(nil, nil)
+	inbounds, err := s.inboundService.GetAllInbounds()
+	if err != nil {
+		return nil, err
+	}
+	panelInbounds := make([]singbox.PanelInbound, 0, len(inbounds))
+	for _, inbound := range inbounds {
+		enabled := make(map[string]bool, len(inbound.ClientStats))
+		for _, client := range inbound.ClientStats {
+			enabled[client.Email] = client.Enable
+		}
+		panelInbounds = append(panelInbounds, singbox.PanelInbound{
+			Enable:         inbound.Enable,
+			Listen:         inbound.Listen,
+			Port:           inbound.Port,
+			Protocol:       string(inbound.Protocol),
+			Tag:            inbound.Tag,
+			Settings:       []byte(inbound.Settings),
+			StreamSettings: []byte(inbound.StreamSettings),
+			Sniffing:       []byte(inbound.Sniffing),
+			EnabledByEmail: enabled,
+		})
+	}
+	return singbox.BuildConfig(templateConfig, panelInbounds)
+}
+
+func (s *XrayService) ValidateSingBoxConfig() error {
+	config, err := s.GetSingBoxConfig()
+	if err != nil {
+		return err
+	}
+	return singbox.CheckConfig(config)
+}
+
 // translateVpnRoutingRules rewrites routing rules so that "user" (email) matches
 // for L2TP/PPTP clients are translated to "source" (IP) matches.
 //
@@ -603,15 +669,17 @@ func (s *XrayService) translateVpnRoutingRules(config *xray.Config) {
 
 // GetXrayTraffic fetches the current traffic statistics from the running Xray process.
 func (s *XrayService) GetXrayTraffic() ([]*xray.Traffic, []*xray.ClientTraffic, error) {
-	if s.settingService.GetProxyCore() == "sing-box" {
-		return nil, nil, errors.New("sing-box traffic API is not supported yet")
-	}
 	if !s.IsXrayRunning() {
-		err := errors.New("xray is not running")
-		logger.Debug("Attempted to fetch Xray traffic, but Xray is not running:", err)
+		err := errors.New(s.settingService.GetProxyCore() + " is not running")
+		logger.Debug("Attempted to fetch proxy traffic, but the active core is not running:", err)
 		return nil, nil, err
 	}
-	apiPort := p.GetAPIPort()
+	apiPort := 0
+	if s.settingService.GetProxyCore() == "sing-box" {
+		apiPort = sbp.GetAPIPort()
+	} else {
+		apiPort = p.GetAPIPort()
+	}
 	if err := s.xrayAPI.Init(apiPort); err != nil {
 		logger.Debug("Failed to initialize Xray API:", err)
 		return nil, nil, err
@@ -638,7 +706,7 @@ func (s *XrayService) RestartXray(isForce bool) error {
 	var singBoxConfig []byte
 	var err error
 	if activeCore == "sing-box" {
-		singBoxConfig, err = s.settingService.GetSingBoxConfigTemplate()
+		singBoxConfig, err = s.GetSingBoxConfig()
 	} else {
 		xrayConfig, err = s.GetXrayConfig()
 	}
@@ -707,6 +775,87 @@ func (s *XrayService) RestartXray(isForce bool) error {
 		return err
 	}
 
+	return nil
+}
+
+// SwitchProxyCore validates and starts the requested core before persisting the
+// selection. If startup fails, the previous core is restored. This prevents a
+// malformed sing-box conversion or missing binary from turning a settings click
+// into a persistent outage.
+func (s *XrayService) SwitchProxyCore(target string) error {
+	target = strings.ToLower(strings.TrimSpace(target))
+	if target == "singbox" {
+		target = "sing-box"
+	}
+	if target != "xray" && target != "sing-box" {
+		return errors.New("proxy core must be xray or sing-box")
+	}
+	oldCore := s.settingService.GetProxyCore()
+	if oldCore == target {
+		return s.RestartXray(true)
+	}
+
+	var targetXray, oldXray *xray.Config
+	var targetSingBox, oldSingBox []byte
+	var err error
+	if target == "sing-box" {
+		targetSingBox, err = s.GetSingBoxConfig()
+		if err == nil {
+			err = singbox.CheckConfig(targetSingBox)
+		}
+	} else {
+		targetXray, err = s.GetXrayConfig()
+	}
+	if err != nil {
+		return fmt.Errorf("cannot switch to %s: %w", target, err)
+	}
+	if oldCore == "sing-box" {
+		oldSingBox, err = s.GetSingBoxConfig()
+	} else {
+		oldXray, err = s.GetXrayConfig()
+	}
+	if err != nil {
+		return fmt.Errorf("cannot prepare rollback for %s: %w", oldCore, err)
+	}
+
+	lock.Lock()
+	defer lock.Unlock()
+	if p != nil && p.IsRunning() {
+		_ = p.Stop()
+	}
+	if sbp != nil && sbp.IsRunning() {
+		_ = sbp.Stop()
+	}
+
+	start := func(core string, xrayConfig *xray.Config, singBoxConfig []byte) error {
+		if core == "sing-box" {
+			sbp = singbox.NewProcess(singBoxConfig)
+			return sbp.Start()
+		}
+		p = xray.NewProcess(xrayConfig)
+		return p.Start()
+	}
+	if err = start(target, targetXray, targetSingBox); err != nil {
+		rollbackErr := start(oldCore, oldXray, oldSingBox)
+		if rollbackErr != nil {
+			return fmt.Errorf("switch to %s failed: %v; restoring %s also failed: %v", target, err, oldCore, rollbackErr)
+		}
+		return fmt.Errorf("switch to %s failed and %s was restored: %w", target, oldCore, err)
+	}
+	if err = s.settingService.SetProxyCore(target); err != nil {
+		if target == "sing-box" {
+			_ = sbp.Stop()
+		} else {
+			_ = p.Stop()
+		}
+		rollbackErr := start(oldCore, oldXray, oldSingBox)
+		if rollbackErr != nil {
+			return fmt.Errorf("saving the %s selection failed: %v; restoring %s also failed: %v", target, err, oldCore, rollbackErr)
+		}
+		return fmt.Errorf("saving the %s selection failed and %s was restored: %w", target, oldCore, err)
+	}
+	result = ""
+	isManuallyStopped.Store(false)
 	return nil
 }
 

@@ -654,11 +654,7 @@ func (s *ServerService) GetStatus(lastStatus *Status) *Status {
 	runtime.ReadMemStats(&rtm)
 	status.AppStats.Mem = rtm.Sys
 	status.AppStats.Threads = uint32(runtime.NumGoroutine())
-	if p != nil && p.IsRunning() {
-		status.AppStats.Uptime = p.GetUptime()
-	} else {
-		status.AppStats.Uptime = 0
-	}
+	status.AppStats.Uptime = s.xrayService.GetCoreUptime()
 
 	return status
 }

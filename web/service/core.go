@@ -818,15 +818,9 @@ func (s *CoreService) ProtocolNeedsSetup(protocol string) bool {
 func (s *CoreService) RestartCore(name string) error {
 	switch name {
 	case "xray":
-		if err := s.xrayService.settingService.SetProxyCore("xray"); err != nil {
-			return err
-		}
-		return s.xrayService.RestartXray(true)
+		return s.xrayService.SwitchProxyCore("xray")
 	case "sing-box":
-		if err := s.xrayService.settingService.SetProxyCore("sing-box"); err != nil {
-			return err
-		}
-		return s.xrayService.RestartXray(true)
+		return s.xrayService.SwitchProxyCore("sing-box")
 	case "l2tp":
 		return s.l2tpService.RestartServices()
 	case "pptp":

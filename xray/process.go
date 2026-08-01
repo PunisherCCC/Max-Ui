@@ -295,16 +295,32 @@ func (p *process) Start() (err error) {
 	cmd.Stdout = p.logWriter
 	cmd.Stderr = p.logWriter
 
+	if err := cmd.Start(); err != nil {
+		p.cmd = nil
+		return common.NewErrorf("Failed to start Xray: %v", err)
+	}
+	exited := make(chan error, 1)
 	go func() {
-		err := cmd.Run()
-		if err != nil {
-			logger.Error("Failure in running xray-core:", err)
-			p.exitErr = err
-		}
+		err := cmd.Wait()
+		p.exitErr = err
+		exited <- err
 	}()
+	// Xray reports bind/config failures immediately. Waiting briefly prevents the
+	// core switcher from persisting a target that already exited.
+	select {
+	case err := <-exited:
+		p.cmd = nil
+		if err == nil {
+			err = errors.New("Xray exited during startup")
+		}
+		return common.NewErrorf("Xray failed during startup: %v: %s", err, p.logWriter.lastLine)
+	case <-time.After(600 * time.Millisecond):
+	}
 
 	p.refreshVersion()
 	p.refreshAPIPort()
+	p.startTime = time.Now()
+	p.exitErr = nil
 
 	return nil
 }
@@ -325,7 +341,17 @@ func (p *process) Stop() error {
 		}
 	}
 
-	return p.cmd.Process.Signal(syscall.SIGTERM)
+	if err := p.cmd.Process.Signal(syscall.SIGTERM); err != nil {
+		return err
+	}
+	deadline := time.Now().Add(3 * time.Second)
+	for p.IsRunning() && time.Now().Before(deadline) {
+		time.Sleep(50 * time.Millisecond)
+	}
+	if p.IsRunning() {
+		return p.cmd.Process.Kill()
+	}
+	return nil
 }
 
 // writeCrashReport writes a crash report to the binary folder with a timestamped filename.

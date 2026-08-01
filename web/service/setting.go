@@ -28,14 +28,7 @@ const singBoxTemplateConfig = `{
     "level": "info",
     "timestamp": true
   },
-  "inbounds": [
-    {
-      "type": "mixed",
-      "tag": "mixed-in",
-      "listen": "127.0.0.1",
-      "listen_port": 2080
-    }
-  ],
+  "inbounds": [],
   "outbounds": [
     {
       "type": "direct",

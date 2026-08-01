@@ -109,11 +109,10 @@ func (a *XraySettingController) updateSetting(c *gin.Context) {
 		outboundTestUrl = "https://www.google.com/generate_204"
 	}
 	_ = a.SettingService.SetXrayOutboundTestUrl(outboundTestUrl)
-	if err := a.SettingService.SetProxyCore(c.PostForm("proxyCore")); err != nil {
-		jsonMsg(c, I18nWeb(c, "pages.settings.toasts.modifySettings"), err)
-		return
-	}
+	requestedCore := c.PostForm("proxyCore")
+	currentCore := a.SettingService.GetProxyCore()
 	if singBoxTemplate := c.PostForm("singBoxTemplateConfig"); singBoxTemplate != "" {
+		previousTemplate, _ := a.SettingService.GetSingBoxConfigTemplate()
 		var raw any
 		if err := json.Unmarshal([]byte(singBoxTemplate), &raw); err != nil {
 			jsonMsg(c, I18nWeb(c, "pages.settings.toasts.modifySettings"), common.NewErrorf("sing-box template config is not valid JSON: %v", err))
@@ -121,6 +120,21 @@ func (a *XraySettingController) updateSetting(c *gin.Context) {
 		}
 		pretty, _ := json.MarshalIndent(raw, "", "  ")
 		if err := a.SettingService.SetSingBoxConfigTemplate(string(pretty)); err != nil {
+			jsonMsg(c, I18nWeb(c, "pages.settings.toasts.modifySettings"), err)
+			return
+		}
+		if requestedCore == "sing-box" || requestedCore == "singbox" || (requestedCore == "" && currentCore == "sing-box") {
+			if err := a.XrayService.ValidateSingBoxConfig(); err != nil {
+				if len(previousTemplate) > 0 {
+					_ = a.SettingService.SetSingBoxConfigTemplate(string(previousTemplate))
+				}
+				jsonMsg(c, I18nWeb(c, "pages.settings.toasts.modifySettings"), err)
+				return
+			}
+		}
+	}
+	if requestedCore != "" && requestedCore != currentCore {
+		if err := a.XrayService.SwitchProxyCore(requestedCore); err != nil {
 			jsonMsg(c, I18nWeb(c, "pages.settings.toasts.modifySettings"), err)
 			return
 		}

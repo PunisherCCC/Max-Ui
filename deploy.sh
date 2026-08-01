@@ -175,30 +175,48 @@ install_sing_box_core() {
     msg "Installing Sing-box core"
     install -d -m 0755 "$BIN_DIR"
     if [[ -x "$SING_BOX_BIN" ]]; then
-        ok "Sing-box core already exists -> $SING_BOX_BIN"
-        return 0
+        local existing_check
+        existing_check="$(mktemp /tmp/max-ui-singbox-check.XXXXXX.json)"
+        cat >"$existing_check" <<'JSON'
+{"log":{"level":"error"},"inbounds":[],"outbounds":[{"type":"direct","tag":"direct"}],"experimental":{"v2ray_api":{"listen":"127.0.0.1:62791","stats":{"enabled":true,"inbounds":[],"outbounds":["direct"],"users":[]}}}}
+JSON
+        if "$SING_BOX_BIN" check -c "$existing_check" >/dev/null 2>&1; then
+            rm -f "$existing_check"
+            ok "Sing-box core already exists and passed compatibility check -> $SING_BOX_BIN"
+            return 0
+        fi
+        rm -f "$existing_check"
+        warn "existing Sing-box is incompatible; replacing it with the official release."
     fi
     local tag ver url tmp dir src
     tag="$(latest_release_tag "SagerNet/sing-box")"
-    [[ -n "$tag" ]] || { warn "could not resolve latest Sing-box release; skipping."; return 0; }
+    [[ -n "$tag" ]] || die "could not resolve the latest Sing-box release."
     ver="${tag#v}"
     url="https://github.com/SagerNet/sing-box/releases/download/$tag/sing-box-$ver-linux-amd64.tar.gz"
     tmp="$(mktemp /tmp/max-ui-singbox.XXXXXX.tgz)"
     dir="$(mktemp -d /tmp/max-ui-singbox.XXXXXX)"
     if ! download_to "$url" "$tmp"; then
         rm -rf "$tmp" "$dir"
-        warn "failed to download Sing-box from $url; install it manually as $SING_BOX_BIN."
-        return 0
+        die "failed to download Sing-box from $url"
     fi
     tar -xzf "$tmp" -C "$dir"
     src="$(find "$dir" -type f -name sing-box | head -n1)"
     if [[ -z "$src" ]]; then
         rm -rf "$tmp" "$dir"
-        warn "downloaded Sing-box archive did not contain sing-box."
-        return 0
+        die "downloaded Sing-box archive did not contain sing-box."
     fi
     install -m 0755 "$src" "$SING_BOX_BIN"
     rm -rf "$tmp" "$dir"
+    local check_cfg
+    check_cfg="$(mktemp /tmp/max-ui-singbox-check.XXXXXX.json)"
+    cat >"$check_cfg" <<'JSON'
+{"log":{"level":"error"},"inbounds":[],"outbounds":[{"type":"direct","tag":"direct"}],"experimental":{"v2ray_api":{"listen":"127.0.0.1:62791","stats":{"enabled":true,"inbounds":[],"outbounds":["direct"],"users":[]}}}}
+JSON
+    if ! "$SING_BOX_BIN" check -c "$check_cfg" >/dev/null 2>&1; then
+        rm -f "$check_cfg"
+        die "installed Sing-box does not support the required V2Ray statistics API."
+    fi
+    rm -f "$check_cfg"
     ok "Sing-box core -> $SING_BOX_BIN"
 }
 

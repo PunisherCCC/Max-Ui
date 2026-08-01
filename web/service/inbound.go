@@ -14,6 +14,7 @@ import (
 	"github.com/mhsanaei/3x-ui/v2/database"
 	"github.com/mhsanaei/3x-ui/v2/database/model"
 	"github.com/mhsanaei/3x-ui/v2/logger"
+	"github.com/mhsanaei/3x-ui/v2/singbox"
 	"github.com/mhsanaei/3x-ui/v2/util/common"
 	"github.com/mhsanaei/3x-ui/v2/util/random"
 	"github.com/mhsanaei/3x-ui/v2/xray"
@@ -26,6 +27,30 @@ import (
 // and integration with the Xray API for real-time updates.
 type InboundService struct {
 	xrayApi xray.XrayAPI
+}
+
+func xrayHandlerAPIAvailable() bool {
+	return (&SettingService{}).GetProxyCore() == "xray" && p != nil && p.IsRunning()
+}
+
+func singBoxConfigNeedsRestart() bool {
+	return (&SettingService{}).GetProxyCore() == "sing-box"
+}
+
+func validateForActiveSingBox(inbound *model.Inbound) error {
+	if inbound == nil || !singBoxConfigNeedsRestart() || !inbound.Enable {
+		return nil
+	}
+	return singbox.ValidateInbound(singbox.PanelInbound{
+		Enable:         inbound.Enable,
+		Listen:         inbound.Listen,
+		Port:           inbound.Port,
+		Protocol:       string(inbound.Protocol),
+		Tag:            inbound.Tag,
+		Settings:       []byte(inbound.Settings),
+		StreamSettings: []byte(inbound.StreamSettings),
+		Sniffing:       []byte(inbound.Sniffing),
+	})
 }
 
 type CopyClientsResult struct {
@@ -837,6 +862,9 @@ func (s *InboundService) AddInbound(inbound *model.Inbound) (*model.Inbound, boo
 	if err := s.validateInboundConfig(inbound); err != nil {
 		return inbound, false, err
 	}
+	if err := validateForActiveSingBox(inbound); err != nil {
+		return inbound, false, common.NewError("Sing-box cannot apply this inbound:", err)
+	}
 	inbound.TrafficMultiplierAfter = 0
 	// Some settings are dictated by the shared daemon, so refuse a value that would
 	// be accepted and then silently ignored.
@@ -937,13 +965,15 @@ func (s *InboundService) AddInbound(inbound *model.Inbound) (*model.Inbound, boo
 
 	needRestart := false
 	if inbound.Enable {
-		if hasDerivedXrayInbound(inbound.Protocol) {
+		if singBoxConfigNeedsRestart() {
+			needRestart = true
+		} else if hasDerivedXrayInbound(inbound.Protocol) {
 			// Its dokodemo (VPN) or socks inbound (relay) is added by the full restart
 			// the caller triggers. Neither can be built from this inbound's own
 			// protocol, so the API path below would only log a failure and set this
 			// same flag.
 			needRestart = true
-		} else {
+		} else if xrayHandlerAPIAvailable() {
 			s.xrayApi.Init(p.GetAPIPort())
 			inboundJson, err1 := json.MarshalIndent(inbound.GenXrayInboundConfig(), "", "  ")
 			if err1 != nil {
@@ -958,6 +988,8 @@ func (s *InboundService) AddInbound(inbound *model.Inbound) (*model.Inbound, boo
 				needRestart = true
 			}
 			s.xrayApi.Close()
+		} else {
+			needRestart = true
 		}
 	}
 
@@ -980,7 +1012,7 @@ func (s *InboundService) DelInbound(id int) (bool, error) {
 	var tag string
 	needRestart := false
 	result := db.Model(model.Inbound{}).Select("tag").Where("id = ? and enable = ?", id, true).First(&tag)
-	if result.Error == nil {
+	if result.Error == nil && xrayHandlerAPIAvailable() {
 		s.xrayApi.Init(p.GetAPIPort())
 		err1 := s.xrayApi.DelInbound(tag)
 		if err1 == nil {
@@ -990,6 +1022,8 @@ func (s *InboundService) DelInbound(id int) (bool, error) {
 			needRestart = true
 		}
 		s.xrayApi.Close()
+	} else if result.Error == nil {
+		needRestart = true
 	} else {
 		logger.Debug("No enabled inbound founded to removing by api", tag)
 	}
@@ -1057,6 +1091,9 @@ func (s *InboundService) UpdateInbound(inbound *model.Inbound) (*model.Inbound, 
 
 	if err := s.validateInboundConfig(inbound); err != nil {
 		return inbound, false, err
+	}
+	if err := validateForActiveSingBox(inbound); err != nil {
+		return inbound, false, common.NewError("Sing-box cannot apply this inbound:", err)
 	}
 	if err := CheckSharedDaemonConflicts(inbound, inbound.Id); err != nil {
 		return inbound, false, err
@@ -1205,13 +1242,15 @@ func (s *InboundService) UpdateInbound(inbound *model.Inbound) (*model.Inbound, 
 	}
 
 	needRestart := false
-	if hasDerivedXrayInbound(oldInbound.Protocol) {
+	if singBoxConfigNeedsRestart() {
+		needRestart = true
+	} else if hasDerivedXrayInbound(oldInbound.Protocol) {
 		// Leave the running dokodemo (VPN) or socks inbound (relay) in place. The live
 		// del/add API would drop it and be unable to recreate it, cutting the clients'
 		// internet until a full restart that an unchanged config will not trigger. The
 		// caller's on<Proto>Changed handles the restart that rebuilds it.
 		needRestart = true
-	} else {
+	} else if xrayHandlerAPIAvailable() {
 		s.xrayApi.Init(p.GetAPIPort())
 		if s.xrayApi.DelInbound(tag) == nil {
 			logger.Debug("Old inbound deleted by api:", tag)
@@ -1238,6 +1277,8 @@ func (s *InboundService) UpdateInbound(inbound *model.Inbound) (*model.Inbound, 
 			}
 		}
 		s.xrayApi.Close()
+	} else {
+		needRestart = true
 	}
 
 	return inbound, needRestart, tx.Save(oldInbound).Error
@@ -1469,12 +1510,14 @@ func (s *InboundService) AddInboundClient(data *model.Inbound) (bool, error) {
 		}
 	}()
 
-	needRestart := false
-	s.xrayApi.Init(p.GetAPIPort())
+	needRestart := singBoxConfigNeedsRestart()
+	if xrayHandlerAPIAvailable() {
+		s.xrayApi.Init(p.GetAPIPort())
+	}
 	for _, client := range clients {
 		if len(client.Email) > 0 {
 			s.AddClientStat(tx, data.Id, &client)
-			if client.Enable {
+			if client.Enable && xrayHandlerAPIAvailable() {
 				cipher := ""
 				if oldInbound.Protocol == "shadowsocks" {
 					cipher = oldSettings["method"].(string)
@@ -1499,7 +1542,9 @@ func (s *InboundService) AddInboundClient(data *model.Inbound) (bool, error) {
 			needRestart = true
 		}
 	}
-	s.xrayApi.Close()
+	if xrayHandlerAPIAvailable() {
+		s.xrayApi.Close()
+	}
 
 	return needRestart, tx.Save(oldInbound).Error
 }
@@ -1714,7 +1759,7 @@ func (s *InboundService) CopyInboundClientsScoped(targetInboundID int, sourceInb
 	}
 
 	newClients := make([]model.Client, 0)
-	needRestart := false
+	needRestart := singBoxConfigNeedsRestart()
 	for _, sourceClient := range sourceClients {
 		originalEmail := strings.TrimSpace(sourceClient.Email)
 		if originalEmail == "" {
@@ -1855,7 +1900,7 @@ func (s *InboundService) DelInboundClient(inboundId int, clientId string) (bool,
 			logger.Error("Delete stats Data Error")
 			return false, err
 		}
-		if needApiDel && notDepleted {
+		if needApiDel && notDepleted && xrayHandlerAPIAvailable() {
 			s.xrayApi.Init(p.GetAPIPort())
 			err1 := s.xrayApi.RemoveUser(oldInbound.Tag, email)
 			if err1 == nil {
@@ -2030,8 +2075,8 @@ func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId strin
 			return false, err
 		}
 	}
-	needRestart := false
-	if len(oldEmail) > 0 {
+	needRestart := singBoxConfigNeedsRestart()
+	if len(oldEmail) > 0 && xrayHandlerAPIAvailable() {
 		s.xrayApi.Init(p.GetAPIPort())
 		if oldClients[clientIndex].Enable {
 			err1 := s.xrayApi.RemoveUser(oldInbound.Tag, oldEmail)
@@ -2068,7 +2113,7 @@ func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId strin
 			}
 		}
 		s.xrayApi.Close()
-	} else {
+	} else if len(oldEmail) == 0 {
 		logger.Debug("Client old email not found")
 		needRestart = true
 	}
@@ -2508,7 +2553,9 @@ func (s *InboundService) addInboundTraffic(tx *gorm.DB, traffics []*xray.Traffic
 func (s *InboundService) addClientTraffic(tx *gorm.DB, traffics []*xray.ClientTraffic) (err error) {
 	if len(traffics) == 0 {
 		// Empty onlineUsers
-		if p != nil {
+		if singBoxConfigNeedsRestart() && sbp != nil {
+			sbp.SetOnlineClients(make([]string, 0))
+		} else if p != nil {
 			p.SetOnlineClients(make([]string, 0))
 		}
 		return nil
@@ -2583,7 +2630,9 @@ func (s *InboundService) addClientTraffic(tx *gorm.DB, traffics []*xray.ClientTr
 	// Set onlineUsers. Nil-checked like the empty-traffics path above: the VPN
 	// protocols report traffic through this same tick even when Xray never started,
 	// and an unguarded call there takes the whole traffic job down.
-	if p != nil {
+	if singBoxConfigNeedsRestart() && sbp != nil {
+		sbp.SetOnlineClients(onlineClients)
+	} else if p != nil {
 		p.SetOnlineClients(onlineClients)
 	}
 
@@ -2745,7 +2794,7 @@ func (s *InboundService) autoRenewClients(tx *gorm.DB) (bool, int64, error) {
 			return false, 0, err
 		}
 	}
-	if p != nil {
+	if xrayHandlerAPIAvailable() {
 		err1 = s.xrayApi.Init(p.GetAPIPort())
 		if err1 != nil {
 			return true, int64(len(traffics)), nil
@@ -2758,6 +2807,9 @@ func (s *InboundService) autoRenewClients(tx *gorm.DB) (bool, int64, error) {
 		}
 		s.xrayApi.Close()
 	}
+	if singBoxConfigNeedsRestart() && len(clientsToAdd) > 0 {
+		needRestart = true
+	}
 	return needRestart, int64(len(traffics)), nil
 }
 
@@ -2765,7 +2817,7 @@ func (s *InboundService) disableInvalidInbounds(tx *gorm.DB) (bool, int64, error
 	now := time.Now().Unix() * 1000
 	needRestart := false
 
-	if p != nil {
+	if xrayHandlerAPIAvailable() {
 		var tags []string
 		err := tx.Table("inbounds").
 			Select("inbounds.tag").
@@ -2792,6 +2844,9 @@ func (s *InboundService) disableInvalidInbounds(tx *gorm.DB) (bool, int64, error
 		Update("enable", false)
 	err := result.Error
 	count := result.RowsAffected
+	if singBoxConfigNeedsRestart() && count > 0 {
+		needRestart = true
+	}
 	return needRestart, count, err
 }
 
@@ -2802,7 +2857,7 @@ func (s *InboundService) disableInvalidClients(tx *gorm.DB) (bool, int64, []stri
 	var pptpDisabledEmails []string
 	var ovpnDisabledEmails []string
 
-	if p != nil {
+	if xrayHandlerAPIAvailable() {
 		var results []struct {
 			Tag      string
 			Email    string
@@ -2854,6 +2909,9 @@ func (s *InboundService) disableInvalidClients(tx *gorm.DB) (bool, int64, []stri
 		Update("enable", false)
 	err := result.Error
 	count := result.RowsAffected
+	if singBoxConfigNeedsRestart() && count > 0 {
+		needRestart = true
+	}
 	return needRestart, count, l2tpDisabledEmails, pptpDisabledEmails, ovpnDisabledEmails, err
 }
 
@@ -3305,7 +3363,7 @@ func (s *InboundService) ResetClientTrafficByEmail(clientEmail string) error {
 }
 
 func (s *InboundService) ResetClientTraffic(id int, clientEmail string) (bool, error) {
-	needRestart := false
+	needRestart := singBoxConfigNeedsRestart()
 
 	traffic, err := s.GetClientTrafficByEmail(clientEmail)
 	if err != nil {
@@ -3323,6 +3381,10 @@ func (s *InboundService) ResetClientTraffic(id int, clientEmail string) (bool, e
 		}
 		for _, client := range clients {
 			if client.Email == clientEmail && client.Enable {
+				if !xrayHandlerAPIAvailable() {
+					needRestart = true
+					break
+				}
 				s.xrayApi.Init(p.GetAPIPort())
 				cipher := ""
 				if string(inbound.Protocol) == "shadowsocks" {
@@ -4155,6 +4217,12 @@ func (s *InboundService) GetClientStatsFor(user *model.User) (*ClientStatsSummar
 }
 
 func (s *InboundService) GetOnlineClients() []string {
+	if singBoxConfigNeedsRestart() {
+		if sbp == nil {
+			return []string{}
+		}
+		return sbp.GetOnlineClients()
+	}
 	// Nil-checked like the other p accesses: Xray may never have started (a
 	// VPN-only deployment, or a failed core), and an unguarded deref panics the
 	// request rather than reporting an empty list.
@@ -4269,7 +4337,7 @@ func (s *InboundService) DelInboundClientByEmail(inboundId int, email string) (b
 		return false, err
 	}
 
-	needRestart := false
+	needRestart := singBoxConfigNeedsRestart()
 
 	// remove stats too
 	if len(email) > 0 {
@@ -4284,7 +4352,7 @@ func (s *InboundService) DelInboundClientByEmail(inboundId int, email string) (b
 			}
 		}
 
-		if needApiDel {
+		if needApiDel && xrayHandlerAPIAvailable() {
 			s.xrayApi.Init(p.GetAPIPort())
 			if err1 := s.xrayApi.RemoveUser(oldInbound.Tag, email); err1 == nil {
 				logger.Debug("Client deleted by api:", email)
