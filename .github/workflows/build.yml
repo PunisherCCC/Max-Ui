@@ -35,6 +35,16 @@ jobs:
       - name: Download Go modules
         run: go mod download
 
+      - name: Download official sing-box validator
+        run: |
+          SING_BOX_VERSION="$(curl --fail --silent --show-error https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r '.tag_name | ltrimstr("v")')"
+          curl --fail --location --output sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
+          tar --extract --gzip --file sing-box.tar.gz
+          SING_BOX_BINARY="$(find "sing-box-${SING_BOX_VERSION}-linux-amd64" -type f -name sing-box -print -quit)"
+          test -n "$SING_BOX_BINARY"
+          chmod +x "$SING_BOX_BINARY"
+          echo "SING_BOX_TEST_BINARY=$GITHUB_WORKSPACE/$SING_BOX_BINARY" >> "$GITHUB_ENV"
+
       - name: Run focused regression tests
         run: |
           go test ./singbox -count=1

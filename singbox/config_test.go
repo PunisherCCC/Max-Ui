@@ -2,6 +2,9 @@ package singbox
 
 import (
 	"encoding/json"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -74,5 +77,41 @@ func TestBuildConfigIgnoresDisabledUnsupportedInbound(t *testing.T) {
 	}
 	if strings.Contains(string(config), `"tag": "wg"`) {
 		t.Fatalf("disabled inbound appeared in generated config: %s", config)
+	}
+}
+
+func TestGeneratedConfigAcceptedBySingBox(t *testing.T) {
+	binary := os.Getenv("SING_BOX_TEST_BINARY")
+	if binary == "" {
+		t.Skip("SING_BOX_TEST_BINARY is not set")
+	}
+
+	config, err := BuildConfig(
+		[]byte(`{"log":{"level":"info"},"outbounds":[{"type":"direct","tag":"direct"}],"route":{"final":"direct"}}`),
+		[]PanelInbound{
+			{
+				Enable: true, Port: 10443, Protocol: "vless", Tag: "vless-test",
+				Settings:       []byte(`{"clients":[{"email":"vless@example.com","id":"11111111-1111-1111-1111-111111111111","enable":true}]}`),
+				StreamSettings: []byte(`{"network":"ws","security":"none","wsSettings":{"path":"/vpn","headers":{"Host":"vpn.example.com"}}}`),
+				Sniffing:       []byte(`{"enabled":true,"routeOnly":false}`),
+			},
+			{
+				Enable: true, Port: 10444, Protocol: "vmess", Tag: "vmess-test",
+				Settings:       []byte(`{"clients":[{"email":"vmess@example.com","id":"22222222-2222-2222-2222-222222222222","enable":true}]}`),
+				StreamSettings: []byte(`{"network":"grpc","security":"none","grpcSettings":{"serviceName":"max-ui"}}`),
+			},
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	path := filepath.Join(t.TempDir(), "sing-box.json")
+	if err := os.WriteFile(path, config, 0600); err != nil {
+		t.Fatal(err)
+	}
+	command := exec.Command(binary, "check", "-c", path)
+	if output, err := command.CombinedOutput(); err != nil {
+		t.Fatalf("official sing-box rejected generated config: %v\n%s\nconfig:\n%s", err, output, config)
 	}
 }
