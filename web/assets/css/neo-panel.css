@@ -2548,7 +2548,103 @@ body.dark .bo-rail {
 }
 
 .bo-alert-btn > span::before {
-  content:"3";
+  content:"!";
+}
+
+.bo-notify-popover .ant-popover-inner-content {
+  padding:0;
+}
+
+.bo-notify-menu {
+  width:min(320px, calc(100vw - 28px));
+  color:var(--neo-ink);
+}
+
+.bo-notify-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  padding:13px 14px;
+  border-bottom:1px solid var(--neo-line);
+}
+
+.bo-notify-head strong {
+  color:var(--neo-ink);
+  font-size:13px;
+}
+
+.bo-notify-head small,
+.bo-notify-row small,
+.bo-notify-empty {
+  color:var(--neo-muted);
+  font-size:11px;
+}
+
+.bo-notify-row {
+  display:grid;
+  grid-template-columns:10px minmax(0, 1fr);
+  align-items:start;
+  gap:10px;
+  width:100%;
+  padding:12px 14px;
+  border:0;
+  border-bottom:1px solid var(--neo-line);
+  background:transparent;
+  color:inherit;
+  text-align:start;
+  cursor:pointer;
+}
+
+.bo-notify-row:hover,
+.bo-notify-link:hover {
+  background:rgba(19,200,163,.08);
+}
+
+.bo-notify-row strong {
+  display:block;
+  color:var(--neo-ink);
+  font-size:12px;
+}
+
+.bo-notify-row small {
+  display:block;
+  margin-top:2px;
+  line-height:1.45;
+}
+
+.bo-notify-dot {
+  width:8px;
+  height:8px;
+  margin-top:4px;
+  border-radius:50%;
+  background:var(--neo-muted);
+}
+
+.bo-notify-dot--warn {
+  background:var(--neo-amber);
+  box-shadow:0 0 0 3px rgba(255,159,28,.14);
+}
+
+.bo-notify-dot--ok {
+  background:var(--neo-green);
+  box-shadow:0 0 0 3px rgba(35,209,139,.14);
+}
+
+.bo-notify-empty {
+  padding:18px 14px;
+  border-bottom:1px solid var(--neo-line);
+  text-align:center;
+}
+
+.bo-notify-link {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 14px;
+  color:var(--neo-ink);
+  font-size:12px;
+  font-weight:700;
 }
 
 .bo-status-chip,
@@ -3049,8 +3145,7 @@ body.dark .bo-rail {
   .bo-topbar-subtitle,
   .bo-host-chip,
   .bo-version-chip,
-  .bo-status-chip,
-  .bo-topbar-right .bo-icon-btn:first-child {
+  .bo-status-chip {
     display:none;
   }
   .bo-dash-stats {
@@ -3557,6 +3652,207 @@ body {
   border-color:rgba(19,200,163,.32);
   background:rgba(19,200,163,.06);
   transform:translateY(-1px);
+}
+
+/* Production polish: keep service names horizontal and make the light toggle
+   visibly change the whole shell after the screenshot-style dark layer. */
+.index-page .bo-svc-grid {
+  grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.bo-svc-chip,
+.index-page .bo-svc-chip {
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  min-width:0;
+}
+
+.bo-svc-led {
+  flex:0 0 9px;
+}
+
+.bo-svc-name {
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  overflow-wrap:normal;
+  word-break:normal;
+  text-align:start;
+}
+
+.bo-svc-state {
+  flex:0 0 auto;
+  margin-top:0;
+  white-space:nowrap;
+}
+
+body.light {
+  --neo-bg:#f5f8fc;
+  --neo-bg-2:#edf3f9;
+  --neo-ink:#102033;
+  --neo-muted:#607087;
+  --neo-panel:#ffffff;
+  --neo-panel-2:#f3f7fb;
+  --neo-line:rgba(29,49,73,.13);
+  --neo-line-2:rgba(29,49,73,.23);
+  --neo-blue:#236fe5;
+  --neo-cyan:#058f86;
+  --neo-green:#0f9f68;
+  --neo-amber:#d97706;
+  --neo-red:#dc3545;
+  --neo-purple:#6d43d8;
+  --neo-shadow:0 16px 38px rgba(31,55,82,.1);
+  --bg:#f5f8fc;
+  --surface:#ffffff;
+  --surface-2:#f3f7fb;
+  --border:rgba(29,49,73,.13);
+  --border-strong:rgba(29,49,73,.26);
+  --text:#102033;
+  --text-2:#52637a;
+  --text-3:#718096;
+  --accent:#058f86;
+  --accent-strong:#08a698;
+  --accent-weak:rgba(5,143,134,.1);
+  --on-accent:#ffffff;
+  color-scheme:light;
+}
+
+body.light .bo-shell {
+  background:
+    radial-gradient(circle at 82% -12%, rgba(35,111,229,.13), transparent 34%),
+    radial-gradient(circle at 12% 16%, rgba(5,143,134,.11), transparent 30%),
+    linear-gradient(180deg, var(--neo-bg), var(--neo-bg-2));
+  color:var(--neo-ink);
+}
+
+body.light .bo-shell::before {
+  background:
+    linear-gradient(90deg, rgba(29,49,73,.1) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(29,49,73,.08) 1px, transparent 1px);
+  opacity:.58;
+}
+
+body.light .bo-rail {
+  background:linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%);
+  border-inline-end:1px solid var(--neo-line);
+  box-shadow:10px 0 28px -26px rgba(31,55,82,.34);
+}
+
+body.light .bo-rail-brand a,
+body.light .bo-rail-brand span {
+  color:#102033;
+}
+
+body.light .bo-rail-item,
+body.light .bo-rail-logout {
+  color:#52637a;
+}
+
+body.light .bo-rail-item:hover,
+body.light .bo-rail-logout:hover {
+  color:#102033;
+  background:rgba(5,143,134,.08);
+}
+
+body.light .bo-rail-item.is-active {
+  color:#072d2a;
+  background:linear-gradient(90deg, rgba(5,143,134,.14), rgba(35,111,229,.08));
+}
+
+body.light .bo-rail-item.is-active .anticon {
+  color:#058f86;
+}
+
+body.light .bo-rail-status,
+body.light .bo-status-chip,
+body.light .bo-host-chip,
+body.light .bo-version-chip,
+body.light .bo-icon-btn,
+body.light .bo-theme-toggle,
+body.light :is(.bo-shell,.login-app,.ant-modal,.ant-drawer,.ant-select-dropdown,.ant-dropdown,.ant-popover) .ant-btn {
+  border-color:var(--neo-line);
+  background:rgba(255,255,255,.72);
+  color:#52637a;
+}
+
+body.light .bo-topbar {
+  background:rgba(255,255,255,.88);
+  border-bottom:1px solid var(--neo-line);
+}
+
+body.light .bo-topbar-title,
+body.light .bo-tile-title,
+body.light .bo-dash-stat-value,
+body.light .bo-spec-val,
+body.light .bo-flow-value,
+body.light .bo-mini-stat strong,
+body.light .bo-conn-stat strong,
+body.light .bo-notify-head strong,
+body.light .bo-notify-row strong,
+body.light .bo-notify-link {
+  color:var(--neo-ink);
+}
+
+body.light .bo-topbar-eyebrow,
+body.light .bo-panel-eyebrow,
+body.light .bo-dash-stat-label,
+body.light .bo-dash-stat small,
+body.light .bo-spec-key,
+body.light .bo-mini-stat small,
+body.light .bo-conn-stat span,
+body.light .bo-ip-row span,
+body.light .bo-table-footer,
+body.light .bo-notify-head small,
+body.light .bo-notify-row small,
+body.light .bo-notify-empty {
+  color:var(--neo-muted);
+}
+
+body.light .bo-tile,
+body.light .bo-card,
+body.light :is(.bo-shell,.login-app,.ant-modal,.ant-drawer,.ant-select-dropdown,.ant-dropdown,.ant-popover) .ant-card {
+  border-color:var(--neo-line);
+  background:linear-gradient(145deg, rgba(255,255,255,.96), rgba(247,251,255,.96));
+  box-shadow:var(--neo-shadow);
+}
+
+body.light .bo-dash-stat,
+body.light .index-page .bo-tile {
+  background:linear-gradient(145deg, rgba(255,255,255,.97), rgba(247,251,255,.97));
+}
+
+body.light .bo-tile-head,
+body.light .bo-overview-table th,
+body.light .bo-overview-table td,
+body.light .bo-spec-row,
+body.light .bo-ip-row,
+body.light .bo-notify-head,
+body.light .bo-notify-row,
+body.light .bo-notify-empty {
+  border-color:var(--neo-line);
+}
+
+body.light .bo-overview-table tbody tr:hover td,
+body.light .bo-shell .ant-table-tbody > tr:hover > td,
+body.light .bo-shell .ant-table-tbody > tr.ant-table-row-hover > td,
+body.light .bo-mini-stat,
+body.light .bo-conn-stat,
+body.light .bo-flow-col,
+body.light .bo-svc-chip {
+  background:rgba(5,143,134,.045);
+}
+
+body.light .bo-pagination-mini button {
+  border-color:var(--neo-line);
+  background:#fff;
+  color:#52637a;
+}
+
+body.light .bo-alert-btn > span {
+  color:#fff;
 }
 
 @media (max-width: 1350px) {

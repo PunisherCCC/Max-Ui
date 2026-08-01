@@ -102,19 +102,6 @@
     // the enforcement.
     const PERMS = Object.assign({}, {{ .perms }});
 
-    window.__maxUiFocusSearch = function () {
-      const root = document.querySelector('.bo-main') || document;
-      const target = root.querySelector(
-        'input[type="search"], input[placeholder], input:not([type]), textarea, .ant-select-search__field'
-      );
-      if (target && typeof target.focus === 'function') {
-        target.focus();
-        return;
-      }
-      const content = document.querySelector('.bo-content');
-      if (content) content.scrollIntoView({ block: 'start', behavior: 'smooth' });
-    };
-
     window.__maxUiRevealAlerts = function () {
       const alert = document.querySelector('.bo-main .ant-alert, #message .ant-message');
       if (alert) {
@@ -192,7 +179,6 @@
 <symbol id="bo-i-box" viewBox="0 0 24 24"><path d="M12 2.6 20.5 7v10L12 21.4 3.5 17V7z"/><polyline points="3.5 7 12 11.5 20.5 7"/><line x1="12" y1="11.5" x2="12" y2="21.4"/></symbol>
 <symbol id="bo-i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
 <symbol id="bo-i-trash" viewBox="0 0 24 24"><polyline points="4 6.5 20 6.5"/><path d="M9 6.5V4.6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1.9"/><path d="M6.2 6.5 7 19.6a1 1 0 0 0 1 .9h8a1 1 0 0 0 1-.9l.8-13.1"/><line x1="10.2" y1="10" x2="10.5" y2="17"/><line x1="13.8" y1="10" x2="13.5" y2="17"/></symbol>
-<symbol id="bo-i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><line x1="15.7" y1="15.7" x2="21" y2="21"/></symbol>
 <symbol id="bo-i-bell" viewBox="0 0 24 24"><path d="M18 9.8a6 6 0 1 0-12 0c0 7-3 7.7-3 7.7h18s-3-.7-3-7.7z"/><path d="M9.8 20a2.4 2.4 0 0 0 4.4 0"/></symbol>
 </defs>
 </svg>
@@ -213,16 +199,47 @@
           </div>
         </div>
         <div class="bo-topbar-right">
-          <button type="button" class="bo-icon-btn" title="Search" aria-label="Search"
-            onclick="window.__maxUiFocusSearch && window.__maxUiFocusSearch()">
-            <svg class="bo-icon bo-icon-16" aria-hidden="true"><use href="#bo-i-search"></use></svg>
-          </button>
           <a-theme-switch></a-theme-switch>
-          <button type="button" class="bo-icon-btn bo-alert-btn" title="Notifications" aria-label="Notifications"
-            onclick="window.__maxUiRevealAlerts && window.__maxUiRevealAlerts()">
-            <svg class="bo-icon bo-icon-16" aria-hidden="true"><use href="#bo-i-bell"></use></svg>
-            <span aria-hidden="true"></span>
-          </button>
+          <a-popover placement="bottomRight" trigger="click" :overlay-class-name="themeSwitcher.currentTheme + ' bo-notify-popover'">
+            <template slot="content">
+              <div class="bo-notify-menu">
+                <div class="bo-notify-head">
+                  <strong>{{ i18n "pages.settings.notifications" }}</strong>
+                  <small v-if="$data.showAlert || ($data.panelUpdate && panelUpdate.available)">Action needed</small>
+                  <small v-else>All clear</small>
+                </div>
+                <button type="button" class="bo-notify-row" v-if="$data.showAlert"
+                  onclick="window.__maxUiRevealAlerts && window.__maxUiRevealAlerts()">
+                  <span class="bo-notify-dot bo-notify-dot--warn"></span>
+                  <span>
+                    <strong>{{ i18n "secAlertTitle" }}</strong>
+                    <small>{{ i18n "secAlertSsl" }}</small>
+                  </span>
+                </button>
+                <button type="button" class="bo-notify-row" v-if="$data.panelUpdate && panelUpdate.available"
+                  onclick="var el=document.querySelector('.bo-update-card, .bo-t-vpnui'); if(el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });">
+                  <span class="bo-notify-dot bo-notify-dot--ok"></span>
+                  <span>
+                    <strong>Panel update available</strong>
+                    <small>Open the MAX-UI card to update.</small>
+                  </span>
+                </button>
+                <div class="bo-notify-empty" v-if="!$data.showAlert && !($data.panelUpdate && panelUpdate.available)">
+                  No active notifications.
+                </div>
+                {{ if .perms.accessPanelSettings }}
+                <a class="bo-notify-link" href="{{ .base_path }}panel/settings">
+                  <svg class="bo-icon bo-icon-14" aria-hidden="true"><use href="#bo-i-sliders"></use></svg>
+                  <span>Notification settings</span>
+                </a>
+                {{ end }}
+              </div>
+            </template>
+            <button type="button" class="bo-icon-btn bo-alert-btn" title="Notifications" aria-label="Notifications">
+              <svg class="bo-icon bo-icon-16" aria-hidden="true"><use href="#bo-i-bell"></use></svg>
+              <span v-if="$data.showAlert || ($data.panelUpdate && panelUpdate.available)" aria-hidden="true"></span>
+            </button>
+          </a-popover>
           <span class="bo-host-chip" title="{{ .host }}">
             <svg class="bo-icon bo-icon-14" aria-hidden="true"><use href="#bo-i-globe"></use></svg>
             <span>{{ .host }}</span>
