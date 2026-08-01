@@ -113,10 +113,11 @@ The multiplier:
 
 GitHub Actions builds and smoke-checks the Linux amd64 binary on every push to `main`.
 
-On version tags such as `v1.8.16`, the workflow creates a GitHub Release and uploads:
+On version tags such as `v1.8.17`, the workflow creates a GitHub Release and uploads:
 
 ```text
 max-ui-amd64
+sing-box-linux-amd64
 ```
 
 The install command uses the latest release asset.
