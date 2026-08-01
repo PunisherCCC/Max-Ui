@@ -1,7 +1,7 @@
 /*
  * neo-panel.css
  * Final visual layer for Max-ui. Loaded after the legacy theme bridges so the
- * whole panel gets one coherent look while the Vue 3 migration continues.
+ * whole panel gets one coherent look while the legacy Ant pages stay stable.
  */
 
 :root {

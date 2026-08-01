@@ -919,7 +919,7 @@ body { background:#040d1c; overflow-x:hidden; }
 </defs>
 </svg>
 
-<a-layout id="app" v-cloak :class="themeSwitcher.currentTheme + ' login-app'">
+<a-layout id="app" v-cloak class="login-app dark" :class="themeSwitcher.currentTheme">
 
   {{/*
     The ground sits OUTSIDE the fetch gate below, so it is present from
@@ -1698,17 +1698,23 @@ body { background:#040d1c; overflow-x:hidden; }
         this.loadingStates.spinning = false;
       },
       async getTwoFactorEnable() {
-        const msg = await HttpUtil.post('/getTwoFactorEnable');
-        if (msg.success) {
-          this.twoFactorEnable = msg.obj;
+        try {
+          const msg = await HttpUtil.post('/getTwoFactorEnable');
+          if (msg && msg.success) {
+            this.twoFactorEnable = msg.obj;
+            return msg.obj;
+          }
+        } catch (e) {
+          console.warn('Two-factor probe failed:', e);
+        } finally {
           this.loadingStates.fetched = true;
           this.$nextTick(() => {
             // autofocus cannot do this: the form is not in the document when the
             // page is parsed, it arrives with this response.
             if (this.$refs.username) this.$refs.username.focus();
           });
-          return msg.obj;
         }
+        return false;
       }
     },
   });

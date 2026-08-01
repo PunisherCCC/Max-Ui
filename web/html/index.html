@@ -28,11 +28,7 @@
     </a-alert>
   </transition>
 
-  <!-- Reserve the viewport height on first paint so the bento grid does not
-       pop in against a collapsed container. -->
-  <div v-if="!loadingStates.fetched" :style="{ minHeight: 'calc(100vh - 160px)' }"></div>
-
-  <div class="bo-bento" v-else>
+  <div class="bo-bento">
 
     <!-- ===== screenshot-style metric row ===== -->
     <section class="bo-dash-stats" aria-label="Overview metrics">
@@ -1428,7 +1424,7 @@
     // can re-render without going back to the server for every checkbox click.
     entries: [],
     // Distinct cores present, and which are currently shown. Rebuilt wholesale
-    // on each fetch so the Vue 3 compat runtime observes keys that did not
+    // on each fetch so Vue observes keys that did not
     // exist when the data option was declared.
     sources: [],
     enabled: {},
@@ -1611,7 +1607,7 @@
     data: {
       themeSwitcher,
       loadingStates: {
-        fetched: false,
+        fetched: true,
         spinning: false
       },
       status: new Status(),
@@ -2453,6 +2449,8 @@
           }
         } catch (e) {
           console.error("Failed to get status:", e);
+        } finally {
+          this.loadingStates.fetched = true;
         }
       },
       setStatus(data) {
@@ -2841,14 +2839,20 @@
         this.showAlert = true;
       }
 
-      const msg = await HttpUtil.post('/panel/setting/defaultSettings');
-      if (msg.success) {
-        this.ipLimitEnable = msg.obj.ipLimitEnable;
+      try {
+        const msg = await HttpUtil.post('/panel/setting/defaultSettings');
+        if (msg && msg.success && msg.obj) {
+          this.ipLimitEnable = msg.obj.ipLimitEnable;
+        }
+      } catch (e) {
+        console.warn('Default settings unavailable on dashboard load:', e);
       }
 
       // Initial status fetch
-      await this.getStatus();
-      await this.getCoreStatuses();
+      await Promise.all([
+        this.getStatus(),
+        this.getCoreStatuses(),
+      ]);
       this.checkDistroSupport();
       this.fetchUserStats();
       this.fetchOverviewInbounds();

@@ -648,7 +648,7 @@
         this.picked = next;
       },
       togglePick(name, on) {
-        // Vue 3 compat supports this legacy reactive path while the Options API
+        // The legacy Vue runtime supports this reactive path while the Options API
         // pages are migrated.
         if (on) this.$set(this.picked, name, true);
         else this.$delete(this.picked, name);

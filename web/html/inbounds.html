@@ -2887,7 +2887,7 @@
             this.onlineClients = nextOnlineClients;
             if (onlineChanged) {
               // Recalculate client counts to update online status.
-              // Keep $set because Vue 3 compat supports this legacy reactive
+              // Keep $set because the legacy Vue runtime uses this reactive
               // update path while the Options API pages are migrated.
               this.dbInbounds.forEach(dbInbound => {
                 const inbound = this.inbounds.find(ib => ib.id === dbInbound.id);
