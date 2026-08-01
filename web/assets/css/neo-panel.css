@@ -3951,3 +3951,76 @@ body.light .bo-alert-btn > span {
     grid-template-columns:1fr;
   }
 }
+
+/* v1.8.14 UI hotfix guardrails.
+   Keep these last: they intentionally override the screenshot translation
+   layer and its media queries so production pages cannot fall back to the
+   vertical-letter service cards or the old header controls. */
+.bo-topbar-right [title="Search"],
+.bo-topbar-right [aria-label="Search"] {
+  display:none !important;
+}
+
+.index-page .bo-svc-grid {
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)) !important;
+  align-items:stretch !important;
+}
+
+.bo-svc-chip,
+.index-page .bo-svc-chip {
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:10px !important;
+  min-width:0 !important;
+  min-height:58px !important;
+  max-width:100% !important;
+  text-align:start !important;
+}
+
+.bo-svc-led,
+.index-page .bo-svc-led {
+  flex:0 0 9px !important;
+  width:9px !important;
+  height:9px !important;
+}
+
+.bo-svc-name,
+.index-page .bo-svc-name,
+.bo-svc-state,
+.index-page .bo-svc-state {
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+  overflow-wrap:normal !important;
+  word-break:normal !important;
+}
+
+.bo-svc-name,
+.index-page .bo-svc-name {
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.bo-svc-state,
+.index-page .bo-svc-state {
+  flex:0 0 auto !important;
+  margin-top:0 !important;
+  white-space:nowrap !important;
+}
+
+body.light .bo-alert-btn > span::before,
+body.dark .bo-alert-btn > span::before,
+.bo-alert-btn > span::before {
+  content:"!" !important;
+}
+
+@media (max-width: 720px) {
+  .index-page .bo-svc-grid {
+    grid-template-columns:1fr !important;
+  }
+}
