@@ -37,6 +37,7 @@ jobs:
 
       - name: Run focused regression tests
         run: |
+          go test ./web -run 'TestAllTemplatesParseAndProtocolFormsDefined|TestEditedTemplatesParse' -count=1
           go test ./web/service -run 'TestMultiplyDelta|TestFoldClientTrafficAppliesMultiplier|TestAddInboundTrafficAppliesMultiplier|TestInboundMultiplierColumnsRoundTrip' -count=1
 
       - name: Build panel binary

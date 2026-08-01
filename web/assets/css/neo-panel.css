@@ -4265,3 +4265,230 @@ body.dark .bo-alert-btn > span::before,
     grid-template-columns:1fr !important;
   }
 }
+
+/* v1.8.16 production layout repair.
+   Keep this block last. It removes the tall empty grid row that appears when
+   Inbounds has little or no data, and prevents long live server values or
+   translated action labels from escaping compact dashboard cards. */
+.index-page .bo-t-inbounds,
+.index-page .bo-t-vit {
+  align-self:stretch !important;
+  min-height:248px !important;
+}
+
+.index-page .bo-t-inbounds .bo-overview-table-wrap {
+  flex:1 1 auto !important;
+  min-height:86px !important;
+}
+
+.index-page .bo-t-inbounds .bo-overview-table-wrap:has(.bo-empty-row) .bo-overview-table {
+  height:100% !important;
+}
+
+.index-page .bo-t-inbounds .bo-overview-table-wrap:has(.bo-empty-row) .bo-empty-row {
+  height:72px !important;
+  vertical-align:middle !important;
+}
+
+.index-page .bo-t-vit .bo-vit-list {
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  align-content:stretch !important;
+  gap:0 16px !important;
+  padding:2px 16px 14px !important;
+}
+
+.index-page .bo-t-vit .bo-vit-item {
+  min-width:0 !important;
+  padding:8px 0 !important;
+}
+
+.index-page .bo-t-vit .bo-vit-row {
+  min-width:0 !important;
+  gap:9px !important;
+}
+
+.index-page .bo-t-vit .bo-ring-wrap {
+  flex:0 0 34px !important;
+  width:34px !important;
+  height:34px !important;
+}
+
+.index-page .bo-t-vit .bo-vit-top,
+.index-page .bo-t-vit .bo-vit-meta {
+  min-width:0 !important;
+}
+
+.index-page .bo-t-vit .bo-vit-name,
+.index-page .bo-t-vit .bo-vit-meta {
+  display:block !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.index-page .bo-t-vit .bo-vit-pct {
+  flex:0 0 auto !important;
+  white-space:nowrap !important;
+}
+
+.index-page .bo-t-vit .bo-vit-spark {
+  height:6px !important;
+  margin-top:7px !important;
+}
+
+.index-page .bo-tile-head,
+.index-page .bo-tile-head > *,
+.index-page .bo-ident-name,
+.index-page .bo-vpnui-body,
+.index-page .bo-btn-row,
+.index-page .bo-kv-row {
+  min-width:0 !important;
+}
+
+.index-page .bo-tile-title {
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.bo-spec-row,
+.index-page .bo-spec-row {
+  grid-template-columns:minmax(96px, .72fr) minmax(0, 1fr) !important;
+}
+
+.bo-spec-key,
+.index-page .bo-spec-key {
+  line-height:1.3 !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.bo-spec-val,
+.index-page .bo-spec-val {
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.index-page .bo-kv-row {
+  display:grid !important;
+  grid-template-columns:minmax(0, 1fr) minmax(0, auto) !important;
+}
+
+.index-page .bo-kv-label,
+.index-page .bo-kv-value,
+.index-page .bo-status-line,
+.index-page .bo-vpnui-version {
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow-wrap:anywhere !important;
+}
+
+.index-page .bo-t-xray .bo-btn-row,
+.index-page .bo-t-manage .bo-btn-row {
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+}
+
+.index-page .bo-t-xray .bo-icon-btn,
+.index-page .bo-t-manage .bo-icon-btn {
+  min-height:40px !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.index-page .bo-t-vpnui .bo-tile-head {
+  flex-wrap:wrap !important;
+}
+
+.index-page .bo-t-vpnui .bo-tile-head .bo-icon-btn {
+  flex:0 1 auto !important;
+  min-width:0 !important;
+  max-width:100% !important;
+}
+
+.index-page .bo-t-users .bo-person-key {
+  font-size:10px !important;
+}
+
+.index-page .bo-t-xray,
+.index-page .bo-t-manage,
+.index-page .bo-t-vpnui,
+.index-page .bo-t-users {
+  align-self:stretch !important;
+  height:100% !important;
+}
+
+@media (max-width:1350px) {
+  .index-page .bo-t-inbounds,
+  .index-page .bo-t-vit {
+    min-height:0 !important;
+  }
+}
+
+@media (max-width:900px) {
+  .index-page .bo-t-vit .bo-vit-list {
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .index-page .bo-t-xray,
+  .index-page .bo-t-manage,
+  .index-page .bo-t-vpnui,
+  .index-page .bo-t-users {
+    align-self:start !important;
+    height:auto !important;
+  }
+
+  .bo-spec-row,
+  .index-page .bo-spec-row {
+    grid-template-columns:minmax(110px, .42fr) minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width:620px) {
+  .index-page .bo-t-inbounds .bo-tile-head {
+    align-items:stretch !important;
+    flex-direction:column !important;
+  }
+
+  .index-page .bo-t-inbounds .bo-table-tools {
+    display:grid !important;
+    grid-template-columns:minmax(0, 1fr) minmax(0, 1fr) 40px !important;
+    width:100% !important;
+  }
+
+  .index-page .bo-t-inbounds .bo-table-tools .ant-btn,
+  .index-page .bo-t-inbounds .bo-table-tools .bo-icon-btn {
+    display:inline-flex !important;
+    width:100% !important;
+    min-width:0 !important;
+    overflow:hidden !important;
+    padding-inline:8px !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+
+  .index-page .bo-t-inbounds .bo-overview-table-wrap:has(.bo-empty-row) .bo-overview-table {
+    min-width:0 !important;
+  }
+
+  .index-page .bo-t-inbounds .bo-overview-table-wrap:has(.bo-empty-row) thead {
+    display:none !important;
+  }
+
+  .index-page .bo-t-vit .bo-vit-list,
+  .index-page .bo-t-xray .bo-btn-row,
+  .index-page .bo-t-manage .bo-btn-row {
+    grid-template-columns:1fr !important;
+  }
+
+  .bo-spec-row,
+  .index-page .bo-spec-row {
+    grid-template-columns:minmax(92px, .48fr) minmax(0, 1fr) !important;
+  }
+}
