@@ -3952,7 +3952,7 @@ body.light .bo-alert-btn > span {
   }
 }
 
-/* v1.8.14 UI hotfix guardrails.
+/* UI hotfix guardrails.
    Keep these last: they intentionally override the screenshot translation
    layer and its media queries so production pages cannot fall back to the
    vertical-letter service cards or the old header controls. */
@@ -4021,6 +4021,247 @@ body.dark .bo-alert-btn > span::before,
 
 @media (max-width: 720px) {
   .index-page .bo-svc-grid {
+    grid-template-columns:1fr !important;
+  }
+}
+
+/* v1.8.15 dashboard layout repair. This is deliberately last: earlier design
+   layers experimented with several bento maps and one of them left Clients
+   outside the grid, producing the huge empty right side seen in production. */
+.bo-shell {
+  display:flex !important;
+  width:100% !important;
+  min-height:100vh !important;
+}
+
+.bo-main {
+  flex:1 1 auto !important;
+  width:auto !important;
+  max-width:none !important;
+  min-width:0 !important;
+}
+
+.bo-content {
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:18px 24px 34px !important;
+}
+
+.index-page .bo-bento {
+  width:100% !important;
+  max-width:none !important;
+  display:grid !important;
+  grid-template-columns:repeat(12, minmax(0, 1fr)) !important;
+  gap:16px !important;
+  align-items:start !important;
+  grid-template-areas:
+    "stats stats stats stats stats stats stats stats stats stats stats stats"
+    "inbounds inbounds inbounds inbounds inbounds inbounds inbounds inbounds vit vit vit vit"
+    "ident ident ident ident flow flow flow flow net net net net"
+    "svc svc svc svc svc svc svc svc svc svc svc svc"
+    "xray xray xray manage manage manage vpnui vpnui vpnui users users users" !important;
+}
+
+.index-page .bo-dash-stats { grid-area:stats !important; }
+.index-page .bo-t-inbounds { grid-area:inbounds !important; }
+.index-page .bo-t-vit { grid-area:vit !important; }
+.index-page .bo-t-ident { grid-area:ident !important; }
+.index-page .bo-t-flow { grid-area:flow !important; }
+.index-page .bo-t-net { grid-area:net !important; }
+.index-page .bo-t-svc { grid-area:svc !important; }
+.index-page .bo-t-xray { grid-area:xray !important; }
+.index-page .bo-t-manage { grid-area:manage !important; }
+.index-page .bo-t-vpnui { grid-area:vpnui !important; }
+.index-page .bo-t-users { grid-area:users !important; }
+
+.index-page .bo-tile {
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+
+.bo-t-ident .bo-ident-top {
+  align-items:center !important;
+}
+
+.bo-spec,
+.index-page .bo-spec {
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:0 16px !important;
+}
+
+.bo-spec-row,
+.index-page .bo-spec-row {
+  display:grid !important;
+  grid-template-columns:minmax(82px, .56fr) minmax(0, 1fr) !important;
+  align-items:center !important;
+  column-gap:10px !important;
+  min-height:30px !important;
+}
+
+.bo-spec-ico,
+.index-page .bo-spec-ico {
+  display:none !important;
+}
+
+.bo-spec-key,
+.index-page .bo-spec-key {
+  min-width:0 !important;
+  overflow:hidden !important;
+  color:var(--neo-muted) !important;
+  font-size:10px !important;
+  line-height:1.15 !important;
+  text-overflow:ellipsis !important;
+  text-transform:uppercase !important;
+  white-space:normal !important;
+}
+
+.bo-spec-val,
+.index-page .bo-spec-val {
+  min-width:0 !important;
+  overflow:hidden !important;
+  color:var(--neo-ink) !important;
+  font-size:11px !important;
+  line-height:1.2 !important;
+  text-align:end !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.index-page .bo-t-xray,
+.index-page .bo-t-manage,
+.index-page .bo-t-vpnui,
+.index-page .bo-t-users {
+  min-height:176px !important;
+}
+
+.bo-t-xray .bo-btn-row,
+.bo-t-manage .bo-btn-row,
+.bo-btn-row--compact {
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit, minmax(88px, 1fr)) !important;
+  gap:8px !important;
+  margin-top:12px !important;
+  flex-wrap:unset !important;
+}
+
+.bo-t-xray .bo-icon-btn,
+.bo-t-manage .bo-icon-btn,
+.bo-btn-row--compact .bo-icon-btn {
+  width:100% !important;
+  min-width:0 !important;
+  height:auto !important;
+  min-height:36px !important;
+  justify-content:center !important;
+  padding:7px 8px !important;
+  overflow:hidden !important;
+  line-height:1.15 !important;
+  text-align:center !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.bo-t-vpnui .bo-tile-head {
+  align-items:center !important;
+}
+
+.bo-t-vpnui .bo-tile-head .bo-icon-btn {
+  width:auto !important;
+  min-width:130px !important;
+  max-width:190px !important;
+  height:auto !important;
+  min-height:36px !important;
+  justify-content:center !important;
+  padding:7px 10px !important;
+  line-height:1.15 !important;
+  text-align:center !important;
+  white-space:normal !important;
+}
+
+.bo-t-users .bo-people,
+.index-page .bo-t-users .bo-people {
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  gap:10px !important;
+  padding:12px !important;
+}
+
+.bo-t-users .bo-person {
+  min-width:0 !important;
+  padding:10px !important;
+  overflow:hidden !important;
+}
+
+.bo-person-key,
+.bo-person-val {
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+@media (max-width: 1350px) {
+  .index-page .bo-bento {
+    grid-template-columns:repeat(6, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "stats stats stats stats stats stats"
+      "inbounds inbounds inbounds inbounds inbounds inbounds"
+      "vit vit vit net net net"
+      "ident ident ident flow flow flow"
+      "svc svc svc svc svc svc"
+      "xray xray xray manage manage manage"
+      "vpnui vpnui vpnui users users users" !important;
+  }
+
+  .bo-dash-stats {
+    grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .bo-content {
+    padding:14px 14px 28px !important;
+  }
+
+  .index-page .bo-bento {
+    grid-template-columns:1fr !important;
+    grid-template-areas:
+      "stats"
+      "inbounds"
+      "vit"
+      "ident"
+      "flow"
+      "net"
+      "svc"
+      "xray"
+      "manage"
+      "vpnui"
+      "users" !important;
+  }
+
+  .bo-dash-stats,
+  .bo-spec,
+  .index-page .bo-spec {
+    grid-template-columns:1fr !important;
+  }
+
+  .index-page .bo-t-xray,
+  .index-page .bo-t-manage,
+  .index-page .bo-t-vpnui,
+  .index-page .bo-t-users {
+    min-height:0 !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .bo-content {
+    padding:12px 10px 24px !important;
+  }
+
+  .bo-dash-stats,
+  .bo-t-users .bo-people,
+  .index-page .bo-t-users .bo-people {
     grid-template-columns:1fr !important;
   }
 }
