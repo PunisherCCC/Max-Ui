@@ -4,6 +4,7 @@ set -euo pipefail
 
 REPO="PunisherCCC/Max-Ui"
 ASSET="max-ui-amd64"
+SING_BOX_ASSET="sing-box-linux-amd64"
 DEST_DIR="/opt/max-ui"
 DEST="$DEST_DIR/$ASSET"
 UNIT="max-ui"
@@ -186,27 +187,17 @@ JSON
             return 0
         fi
         rm -f "$existing_check"
-        warn "existing Sing-box is incompatible; replacing it with the official release."
+        warn "existing Sing-box is incompatible; replacing it with the Max-Ui statistics-enabled build."
     fi
-    local tag ver url tmp dir src
-    tag="$(latest_release_tag "SagerNet/sing-box")"
-    [[ -n "$tag" ]] || die "could not resolve the latest Sing-box release."
-    ver="${tag#v}"
-    url="https://github.com/SagerNet/sing-box/releases/download/$tag/sing-box-$ver-linux-amd64.tar.gz"
-    tmp="$(mktemp /tmp/max-ui-singbox.XXXXXX.tgz)"
-    dir="$(mktemp -d /tmp/max-ui-singbox.XXXXXX)"
+    local url tmp
+    url="https://github.com/$REPO/releases/latest/download/$SING_BOX_ASSET"
+    tmp="$(mktemp /tmp/max-ui-singbox.XXXXXX)"
     if ! download_to "$url" "$tmp"; then
-        rm -rf "$tmp" "$dir"
-        die "failed to download Sing-box from $url"
+        rm -f "$tmp"
+        die "failed to download the Max-Ui Sing-box build from $url"
     fi
-    tar -xzf "$tmp" -C "$dir"
-    src="$(find "$dir" -type f -name sing-box | head -n1)"
-    if [[ -z "$src" ]]; then
-        rm -rf "$tmp" "$dir"
-        die "downloaded Sing-box archive did not contain sing-box."
-    fi
-    install -m 0755 "$src" "$SING_BOX_BIN"
-    rm -rf "$tmp" "$dir"
+    install -m 0755 "$tmp" "$SING_BOX_BIN"
+    rm -f "$tmp"
     local check_cfg
     check_cfg="$(mktemp /tmp/max-ui-singbox-check.XXXXXX.json)"
     cat >"$check_cfg" <<'JSON'

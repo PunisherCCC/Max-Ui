@@ -53,6 +53,7 @@ func BuildConfig(template []byte, panelInbounds []PanelInbound) ([]byte, error) 
 
 	inbounds := make([]any, 0, len(panelInbounds))
 	inboundTags := make([]string, 0, len(panelInbounds))
+	sniffRules := make([]any, 0, len(panelInbounds))
 	users := make([]string, 0)
 	seenUsers := make(map[string]struct{})
 	for _, inbound := range panelInbounds {
@@ -65,6 +66,12 @@ func BuildConfig(template []byte, panelInbounds []PanelInbound) ([]byte, error) 
 		}
 		inbounds = append(inbounds, converted)
 		inboundTags = append(inboundTags, inbound.Tag)
+		if sniffingEnabled(inbound.Sniffing) {
+			sniffRules = append(sniffRules, map[string]any{
+				"inbound": inbound.Tag,
+				"action":  "sniff",
+			})
+		}
 		for _, name := range names {
 			if _, exists := seenUsers[name]; exists {
 				continue
@@ -74,6 +81,15 @@ func BuildConfig(template []byte, panelInbounds []PanelInbound) ([]byte, error) 
 		}
 	}
 	root["inbounds"] = inbounds
+	if len(sniffRules) > 0 {
+		route, _ := root["route"].(map[string]any)
+		if route == nil {
+			route = make(map[string]any)
+		}
+		existingRules, _ := route["rules"].([]any)
+		route["rules"] = append(sniffRules, existingRules...)
+		root["route"] = route
+	}
 
 	outboundTags := make([]string, 0)
 	if outbounds, ok := root["outbounds"].([]any); ok {
@@ -171,7 +187,6 @@ func convertInbound(source PanelInbound) (map[string]any, []string, error) {
 	if err := applyStream(result, source.StreamSettings); err != nil {
 		return nil, nil, err
 	}
-	applySniffing(result, source.Sniffing)
 	return result, names, nil
 }
 
@@ -366,17 +381,13 @@ func convertReality(source map[string]any) (map[string]any, error) {
 	return map[string]any{"enabled": true, "reality": reality}, nil
 }
 
-func applySniffing(inbound map[string]any, raw []byte) {
+func sniffingEnabled(raw []byte) bool {
 	var sniffing map[string]any
 	if json.Unmarshal(raw, &sniffing) != nil {
-		return
+		return false
 	}
-	if enabled, _ := sniffing["enabled"].(bool); enabled {
-		inbound["sniff"] = true
-		if routeOnly, _ := sniffing["routeOnly"].(bool); !routeOnly {
-			inbound["sniff_override_destination"] = true
-		}
-	}
+	enabled, _ := sniffing["enabled"].(bool)
+	return enabled
 }
 
 func defaultListen(value string) string {

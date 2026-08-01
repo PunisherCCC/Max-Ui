@@ -45,6 +45,11 @@ func TestBuildConfigConvertsVLESSAndStats(t *testing.T) {
 	if transport["type"] != "ws" || transport["path"] != "/vpn" {
 		t.Fatalf("websocket transport was not converted: %#v", transport)
 	}
+	route := root["route"].(map[string]any)
+	rules := route["rules"].([]any)
+	if len(rules) != 1 || rules[0].(map[string]any)["action"] != "sniff" {
+		t.Fatalf("sniff route action was not generated: %#v", rules)
+	}
 	tlsConfig := inbound["tls"].(map[string]any)
 	if tlsConfig["certificate_path"] != "/etc/max-ui/cert/fullchain.pem" {
 		t.Fatalf("TLS certificate path was not converted: %#v", tlsConfig)

@@ -35,15 +35,17 @@ jobs:
       - name: Download Go modules
         run: go mod download
 
-      - name: Download official sing-box validator
+      - name: Build statistics-enabled sing-box
         run: |
           SING_BOX_VERSION="$(curl --fail --silent --show-error https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r '.tag_name | ltrimstr("v")')"
-          curl --fail --location --output sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
-          tar --extract --gzip --file sing-box.tar.gz
-          SING_BOX_BINARY="$(find "sing-box-${SING_BOX_VERSION}-linux-amd64" -type f -name sing-box -print -quit)"
-          test -n "$SING_BOX_BINARY"
-          chmod +x "$SING_BOX_BINARY"
-          echo "SING_BOX_TEST_BINARY=$GITHUB_WORKSPACE/$SING_BOX_BINARY" >> "$GITHUB_ENV"
+          git clone --depth 1 --branch "v${SING_BOX_VERSION}" https://github.com/SagerNet/sing-box.git sing-box-source
+          mkdir -p dist
+          (
+            cd sing-box-source
+            go build -trimpath -tags with_v2ray_api -ldflags "-s -w" -o "$GITHUB_WORKSPACE/dist/sing-box-linux-amd64" ./cmd/sing-box
+          )
+          chmod +x dist/sing-box-linux-amd64
+          echo "SING_BOX_TEST_BINARY=$GITHUB_WORKSPACE/dist/sing-box-linux-amd64" >> "$GITHUB_ENV"
 
       - name: Run focused regression tests
         run: |
@@ -65,12 +67,16 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: max-ui-amd64
-          path: dist/max-ui-amd64
+          name: max-ui-linux-amd64
+          path: |
+            dist/max-ui-amd64
+            dist/sing-box-linux-amd64
           if-no-files-found: error
 
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/max-ui-amd64
+          files: |
+            dist/max-ui-amd64
+            dist/sing-box-linux-amd64

@@ -48,7 +48,7 @@ max-ui
 During installation Max-ui prepares:
 
 - `bin/xray-linux-amd64` from the latest Xray-core release.
-- `bin/sing-box-linux-amd64` from the latest Sing-box release.
+- `bin/sing-box-linux-amd64` from this project's latest release, compiled from upstream sing-box with the V2Ray statistics API required for client traffic accounting.
 - `bin/telemt` for MTProto Proxy.
 - Distro packages such as OpenVPN, strongSwan, xl2tpd, ocserv, nftables and iproute2 when `apt-get` is available.
 
@@ -157,7 +157,7 @@ The GitHub build workflow verifies:
 - Focused traffic multiplier regression tests pass.
 - The Linux amd64 binary compiles.
 - The compiled binary can print its version.
-- A release asset is published for version tags.
+- Version tags publish both the Max-Ui panel and its tested, statistics-enabled sing-box runtime.
 
 ## Notes
 
